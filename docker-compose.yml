@@ -9,10 +9,8 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      # Persist uploaded files
-      - ./data/uploads:/app/uploads
-      # Persist SQLite database
-      - ./data/metadata.db:/app/metadata.db
+      # Persist Data (DB + Uploads)
+      - ./data:/app/data
     environment:
       - TZ=Asia/Ho_Chi_Minh
     restart: unless-stopped

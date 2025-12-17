@@ -71,13 +71,6 @@ pipeline {
                      // Pull image mới nhất về (phòng trường hợp skip build ở trên)
                      sh "docker pull ${fullImageName}"
 
-                     // Chuẩn bị thư mục data trên Host (quan trọng)
-                     // Tạo file db trống trước nếu chưa có để Docker mount đúng là file
-                     sh """
-                        mkdir -p ${HOST_DATA_DIR}/uploads
-                        touch ${HOST_DATA_DIR}/metadata.db
-                     """
-
                      // Cleanup container cũ và chạy container mới
                      sh """
                      echo "Stopping old container..."
@@ -89,8 +82,7 @@ pipeline {
                          --restart unless-stopped \
                          -p 8000:8000 \
                          -e TZ=Asia/Ho_Chi_Minh \
-                         -v ${HOST_DATA_DIR}/uploads:/app/uploads \
-                         -v ${HOST_DATA_DIR}/metadata.db:/app/metadata.db \
+                         -v drop-data:/app/data \
                          ${fullImageName}
                      """
                 }

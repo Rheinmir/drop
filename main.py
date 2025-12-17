@@ -14,11 +14,12 @@ from pydantic import BaseModel
 APP_NAME = "Drop"
 HOST_IP = "0.0.0.0" # Để các máy trong mạng LAN truy cập được
 PORT = 8000
-UPLOAD_DIR = "uploads"
-DB_FILE = "metadata.db"
+UPLOAD_DIR = "data/uploads"
+DB_FILE = "data/metadata.db"
 SECRET_PASS = "0797042389gia" # Password yêu cầu
 
-# Tạo thư mục upload nếu chưa có
+# Create data directory if not exists
+os.makedirs("data", exist_ok=True)
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # --- DATABASE SETUP (Metadata) ---
