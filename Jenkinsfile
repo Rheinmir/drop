@@ -5,7 +5,7 @@ pipeline {
         // Cấu hình Registry và Image
         REGISTRY = 'ghcr.io'
         // Thay 'giatran' bằng GitHub username của bạn nếu khác
-        IMAGE_REPO = 'giatran/drop' 
+        IMAGE_REPO = 'rheinmir/drop' 
         CONTAINER_NAME = 'drop-server'
         
         // Cấu hình đường dẫn lưu data trên Server (Host)
