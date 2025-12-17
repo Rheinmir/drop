@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Drop</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="icon" href="/favicon.png?v=3" />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Outfit', 'sans-serif'],
+            },
+            colors: {
+              white: 'rgb(var(--text-main) / <alpha-value>)',
+              slate: {
+                900: 'rgb(var(--bg-main) / <alpha-value>)',
+                800: 'rgb(var(--bg-card) / <alpha-value>)',
+                700: 'rgb(var(--bg-hover) / <alpha-value>)',
+                600: 'rgb(var(--bg-hover) / <alpha-value>)', // Mapping 600 to hover for consistency
+                500: 'rgb(var(--text-sub) / <alpha-value>)',
+                400: 'rgb(var(--text-sub) / <alpha-value>)',
+                300: 'rgb(var(--text-sub) / <alpha-value>)',
+                200: 'rgb(var(--text-sub) / <alpha-value>)',
+              },
+              ocean: {
+                50: '#f0f9ff', // Keep light shades for some UIs
+                100: '#e0f2fe',
+                200: '#bae6fd',
+                300: 'rgb(var(--accent) / 0.5)',
+                400: 'rgb(var(--accent) / 0.7)',
+                500: 'rgb(var(--accent) / <alpha-value>)',
+                600: 'rgb(var(--accent) / <alpha-value>)',
+                900: 'rgb(var(--accent) / <alpha-value>)',
+              },
+            },
+            animation: {
+              'float': 'float 8s ease-in-out infinite',
+              'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              'wave': 'wave 2s linear infinite',
+            },
+            keyframes: {
+              float: {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(-6px)' },
+              },
+              wave: {
+                '0%': { transform: 'translateX(0)' },
+                '100%': { transform: 'translateX(-50%)' },
+              }
+            }
+          },
+        },
+      }
+    </script>
+    <style>
+      :root {
+        /* Default (Ocean/Dark) */
+        --bg-main: 15 23 42;       /* #0f172a */
+        --bg-card: 30 41 59;       /* #1e293b */
+        --bg-hover: 51 65 85;      /* #334155 */
+        --text-main: 248 250 252;  /* #f8fafc */
+        --text-sub: 148 163 184;   /* #94a3b8 */
+        --accent: 14 165 233;      /* #0ea5e9 */
+      }
+
+      [data-theme='light'] {
+        --bg-main: 248 250 252;    /* Slate-50 (Softer than white) */
+        --bg-card: 255 255 255;    /* White */
+        --bg-hover: 241 245 249;   /* Slate-100 */
+        --text-main: 51 65 85;     /* Slate-700 (Softer contrast) */
+        --text-sub: 100 116 139;   /* Slate-500 */
+        --accent: 14 165 233;      /* Sky-500 */
+      }
+
+      [data-theme='sea'] {
+        --bg-main: 17 36 37;       /* Deep Green/Teal */
+        --bg-card: 24 60 61;
+        --bg-hover: 45 92 94;
+        --text-main: 224 242 241;
+        --text-sub: 136 204 202;
+        --accent: 20 184 166;      /* Teal-500 */
+      }
+
+      [data-theme='sand'] {
+        --bg-main: 41 37 36;       /* Warm Dark Brown (Stone-800) */
+        --bg-card: 68 64 60;       /* Stone-700 */
+        --bg-hover: 87 83 78;      /* Stone-600 */
+        --text-main: 250 250 249;
+        --text-sub: 168 162 158;
+        --accent: 245 158 11;      /* Amber-500 */
+      }
+
+      [data-theme='book'] {
+        --bg-main: 242 240 233;    /* Muted Beige/Grayish */
+        --bg-card: 253 251 247;    /* Off-white paper */
+        --bg-hover: 231 229 220;   
+        --text-main: 71 69 67;     /* Stone-700 (Softer) */
+        --text-sub: 120 113 108;   /* Stone-500 */
+        --accent: 180 83 9;        /* Amber-700 */
+      }
+
+      [data-theme='midnight'] {
+        --bg-main: 0 0 0;          /* Black */
+        --bg-card: 24 24 27;       /* Zinc-900 */
+        --bg-hover: 39 39 42;      /* Zinc-800 */
+        --text-main: 250 250 250;
+        --text-sub: 161 161 170;
+        --accent: 124 58 237;      /* Violet-600 */
+      }
+
+      body {
+        background-color: rgb(var(--bg-main));
+        color: rgb(var(--text-main));
+        transition: background-color 0.5s ease, color 0.5s ease;
+      }
+
+      /* OpenAI / Elegant Block Style Overrides for Light & Book */
+      [data-theme='light'] .bg-slate-800\/40,
+      [data-theme='book'] .bg-slate-800\/40 {
+        background-color: rgb(var(--bg-card)) !important;
+        border: 1px solid rgb(var(--bg-hover));
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      }
+      
+      [data-theme='light'] .bg-white\/5,
+      [data-theme='book'] .bg-white\/5 {
+         background-color: rgb(var(--bg-card)) !important;
+         border: 1px solid rgb(var(--bg-hover));
+         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      }
+      
+      [data-theme='light'] .bg-slate-900,
+      [data-theme='book'] .bg-slate-900 {
+         background-color: rgb(var(--bg-card)) !important;
+         border: 1px solid rgb(var(--bg-hover));
+         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      }
+      
+      [data-theme='light'] .hover\:bg-white\/10:hover,
+      [data-theme='book'] .hover\:bg-white\/10:hover {
+        background-color: rgb(var(--bg-hover)) !important;
+      }
+      
+      [data-theme='light'] .bg-white\/10,
+      [data-theme='book'] .bg-white\/10 {
+         background-color: rgb(var(--bg-hover)) !important;
+      }
+
+      /* No Gradients for Light/Book */
+      [data-theme='light'] [class*='bg-gradient-'],
+      [data-theme='book'] [class*='bg-gradient-'] {
+        background-image: none !important;
+      }
+
+
+      
+      /* Smooth transitions for all colored elements */
+      *, *::before, *::after {
+        transition-property: background-color, border-color, color, fill, stroke;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        transition-duration: 300ms;
+      }
+
+      /* Custom scrollbar for webkit */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: rgb(var(--bg-main)); 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgb(var(--bg-card)); 
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgb(var(--bg-hover)); 
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "lucide-react": "https://esm.sh/lucide-react@^0.561.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
+  }
+}
+</script>
+
+</head>
+  <body>
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
