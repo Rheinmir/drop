@@ -124,7 +124,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
   
   // Theme & Language
   const [theme, setTheme] = useState<string>(() => localStorage.getItem('app-theme') || 'ocean');
-  const [lang, setLang] = useState<Language>(() => (localStorage.getItem('app-lang') as Language) || 'vi');
+  const [lang, setLang] = useState<Language>(() => {
+    const saved = localStorage.getItem('app-lang');
+    if (saved && Object.keys(translations).includes(saved)) {
+      return saved as Language;
+    }
+    return 'vi';
+  });
   const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
 
   // Menu visibility states
