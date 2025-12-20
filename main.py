@@ -146,7 +146,7 @@ async def list_files(authorized: bool = Depends(verify_token)):
     c.execute("SELECT * FROM files ORDER BY is_pinned DESC, upload_time DESC")
     rows = c.fetchall()
     conn.close()
-    return rows
+    return [dict(row) for row in rows]
 
 @app.get("/api/download/{file_id}")
 async def download_file(file_id: int, inline: bool = False, authorized: bool = Depends(verify_token)):
