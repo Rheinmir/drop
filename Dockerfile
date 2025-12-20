@@ -31,7 +31,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY main.py .
 
 # Copy built frontend
-COPY --from=builder /app/frontend/dist ./static
+COPY --from=builder /app/static ./static
 
 # Create uploads directory
 RUN mkdir -p uploads
