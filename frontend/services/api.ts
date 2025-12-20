@@ -122,3 +122,44 @@ export const fetchAnalytics = async (token: string): Promise<AnalyticsData> => {
   }
   return await res.json();
 };
+
+export const restoreBackup = async (files: FileList | File[], token: string): Promise<{message: string}> => {
+  const formData = new FormData();
+  
+  // Handle both FileList and Array of Files
+  const fileArray = files instanceof FileList ? Array.from(files) : files;
+  
+  fileArray.forEach(file => {
+    formData.append('files', file);
+  });
+  
+  const res = await fetch(`${API_BASE}/restore`, {
+    method: 'POST',
+    headers: { 'auth-token': token },
+    body: formData
+  });
+  
+  const responseData = await res.json();
+
+  if (!res.ok) {
+    throw new Error(responseData.detail || 'Restore failed');
+  }
+  return responseData;
+};
+
+export const exportData = async (token: string): Promise<{message: string; files: string[]}> => {
+  const res = await fetch(`${API_BASE}/export`, {
+      method: 'POST',
+      headers: { 'auth-token': token }
+  });
+  
+  if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'Export failed');
+  }
+  return await res.json();
+};
+
+export const getBackupUrl = (token: string) => {
+    return `${API_BASE}/backup?token=${token}`; 
+};

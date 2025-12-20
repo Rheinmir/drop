@@ -1,9 +1,6 @@
-
-import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
-import { FileRecord } from '../types';
-import { fetchFiles, uploadFiles, getDownloadUrl, getPreviewUrl, togglePin, updateFileMeta, fetchAnalytics, AnalyticsData } from '../services/api';
+import { fetchFiles, uploadFiles, getDownloadUrl, getPreviewUrl, togglePin, updateFileMeta, fetchAnalytics, AnalyticsData, restoreBackup, getBackupUrl } from '../services/api';
 import { BarChart as BarGraph, LineChart, Line, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart as PieGraph, Pie, Cell, AreaChart, Area } from 'recharts';
-import { Upload, FileText, Download, RefreshCw, LogOut, HardDrive, Clock, CheckCircle, Eye, Copy, Check, Edit2, Palette, Sun, Moon, Book, CloudRain, Mountain, Droplets, MoreVertical, Globe, Languages, Trash2, FolderOpen, ChevronLeft, ChevronRight, Pin, PinOff, Search, ArrowUpDown, Filter, Tag, Layers, Database, PieChart, List, FileImage, FileVideo, FileAudio, FileCode, FileArchive, FileSpreadsheet, File as FileGeneric, X, ZoomIn, ZoomOut, RotateCcw, RotateCw } from 'lucide-react';
+import { Upload, FileText, Download, RefreshCw, LogOut, HardDrive, Clock, CheckCircle, Eye, Copy, Check, Edit2, Palette, Sun, Moon, Book, CloudRain, Mountain, Droplets, MoreVertical, Globe, Languages, Trash2, FolderOpen, ChevronLeft, ChevronRight, Pin, PinOff, Search, ArrowUpDown, Filter, Tag, Layers, Database, PieChart, List, FileImage, FileVideo, FileAudio, FileCode, FileArchive, FileSpreadsheet, File as FileGeneric, X, ZoomIn, ZoomOut, RotateCcw, RotateCw, AlertCircle } from 'lucide-react';
 // @ts-ignore
 import Favico from 'favico.js';
 import { translations, Language } from '../translations';
@@ -120,6 +117,7 @@ const getFileIcon = (filename: string) => {
 export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
   const [files, setFiles] = useState<FileRecord[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [copiedId, setCopiedId] = useState<number | null>(null);
   const [dragActive, setDragActive] = useState(false);
@@ -174,6 +172,46 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
 
   const faviconRef = useRef<any>(null);
   const notificationCountRef = useRef(0);
+  
+  // Backup & Restore
+  const [isRestoring, setIsRestoring] = useState(false);
+  const restoreInputRef = useRef<HTMLInputElement>(null);
+
+  const handleBackup = async () => {
+      setIsExporting(true);
+      try {
+          // @ts-ignore
+          await import('../services/api').then(mod => mod.exportData(token));
+          alert(t('exportSuccess') || 'Export created. Please check the file list to download.');
+          loadData();
+      } catch (err: any) {
+          alert(err.message || 'Export failed');
+      } finally {
+          setIsExporting(false);
+      }
+  };
+
+  const handleRestore = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files && e.target.files.length > 0) {
+          if (!window.confirm(t('restoreConfirm'))) {
+              e.target.value = '';
+              return;
+          }
+          
+          setIsRestoring(true);
+          try {
+              // @ts-ignore
+              await import('../services/api').then(mod => mod.restoreBackup(e.target.files!, token));
+              alert(t('restoreSuccess'));
+              window.location.reload();
+          } catch (err: any) {
+              alert(err.message || 'Restore failed');
+          } finally {
+              setIsRestoring(false);
+              if (restoreInputRef.current) restoreInputRef.current.value = '';
+          }
+      }
+  };
 
   // Reset zoom, offset, and rotation when selected file changes
   useEffect(() => {
@@ -904,6 +942,60 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
                                             ))}
                                         </tbody>
                                     </table>
+                                </div>
+                            </div>
+
+                            {/* Data Management */}
+                            <div className="lg:col-span-2 bg-slate-900/80 border border-white/10 rounded-3xl p-6 shadow-xl">
+                                <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
+                                    <Database size={20} className="text-indigo-400"/> {t('actions')}
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {/* Export */}
+                                    <div className="bg-white/5 rounded-2xl p-6 border border-white/5 flex flex-col gap-4">
+                                        <div className="flex items-center gap-4">
+                                            <div className="p-3 bg-emerald-500/20 text-emerald-400 rounded-xl">
+                                                <Download size={24} />
+                                            </div>
+                                            <div>
+                                                <h4 className="text-white font-medium">{t('exportData')}</h4>
+                                                <p className="text-sm text-slate-400">{t('backupDesc')}</p>
+                                            </div>
+                                        </div>
+                                        <button 
+                                            onClick={handleBackup}
+                                            disabled={isExporting}
+                                            className={`mt-2 w-full py-3 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2`}
+                                        >
+                                            {isExporting ? <RefreshCw className="animate-spin" size={18} /> : <Download size={18} />} 
+                                            {isExporting ? t('exporting') || 'Exporting...' : t('backup')}
+                                        </button>
+                                    </div>
+
+                                    {/* Import */}
+                                    <div className="bg-white/5 rounded-2xl p-6 border border-white/5 flex flex-col gap-4">
+                                        <div className="flex items-center gap-4">
+                                            <div className="p-3 bg-blue-500/20 text-blue-400 rounded-xl">
+                                                <Upload size={24} />
+                                            </div>
+                                            <div>
+                                                <h4 className="text-white font-medium">{t('importData')}</h4>
+                                                <p className="text-sm text-slate-400">{t('restoreDesc')}</p>
+                                            </div>
+                                        </div>
+                                        <label className={`mt-2 w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2 cursor-pointer ${isRestoring ? 'opacity-50 pointer-events-none' : ''}`}>
+                                            {isRestoring ? <RefreshCw className="animate-spin" size={18} /> : <Upload size={18} />}
+                                            {isRestoring ? t('restoring') : t('restore')}
+                                            <input 
+                                                type="file" 
+                                                accept=".zip,.001,.002,.003,.part1,.part2" 
+                                                multiple
+                                                className="hidden" 
+                                                onChange={handleRestore} 
+                                                ref={restoreInputRef}
+                                            />
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
