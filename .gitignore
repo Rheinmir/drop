@@ -14,4 +14,4 @@ venv/
 frontend/node_modules/
 frontend/dist/
 frontend/.env
-.DS_Store
+static/
