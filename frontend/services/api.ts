@@ -25,6 +25,9 @@ export const fetchFiles = async (token: string): Promise<FileRecord[]> => {
   if (res.status === 401) {
     throw new Error('Unauthorized');
   }
+  if (!res.ok) {
+    throw new Error(`API Error: ${res.status} ${res.statusText}`);
+  }
   return await res.json();
 };
 
@@ -119,6 +122,9 @@ export const fetchAnalytics = async (token: string): Promise<AnalyticsData> => {
   });
   if (res.status === 401) {
     throw new Error('Unauthorized');
+  }
+  if (!res.ok) {
+    throw new Error(`API Error: ${res.status} ${res.statusText}`);
   }
   return await res.json();
 };
