@@ -1,3 +1,5 @@
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { FileRecord } from '../types';
 import { fetchFiles, uploadFiles, getDownloadUrl, getPreviewUrl, togglePin, updateFileMeta, fetchAnalytics, AnalyticsData, restoreBackup, getBackupUrl } from '../services/api';
 import { BarChart as BarGraph, LineChart, Line, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart as PieGraph, Pie, Cell, AreaChart, Area } from 'recharts';
 import { Upload, FileText, Download, RefreshCw, LogOut, HardDrive, Clock, CheckCircle, Eye, Copy, Check, Edit2, Palette, Sun, Moon, Book, CloudRain, Mountain, Droplets, MoreVertical, Globe, Languages, Trash2, FolderOpen, ChevronLeft, ChevronRight, Pin, PinOff, Search, ArrowUpDown, Filter, Tag, Layers, Database, PieChart, List, FileImage, FileVideo, FileAudio, FileCode, FileArchive, FileSpreadsheet, File as FileGeneric, X, ZoomIn, ZoomOut, RotateCcw, RotateCw, AlertCircle } from 'lucide-react';
