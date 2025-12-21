@@ -771,7 +771,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
       <div className={`fixed inset-0 z-0 bg-gradient-to-br from-slate-900 via-slate-900/90 to-slate-800 pointer-events-none transition-opacity duration-500 ${bgImage ? 'opacity-80' : 'opacity-100'}`}></div>
 
       <div className="max-w-7xl mx-auto relative z-10">
-        <header className="flex justify-between items-center mb-8">
+        <header className="flex flex-col md:flex-row justify-between items-center mb-6 md:mb-8 gap-4 md:gap-0">
           <div className="flex items-center gap-3 group">
             <div className="relative">
                <div className="bg-gradient-to-br from-ocean-400 to-ocean-600 p-2.5 rounded-xl shadow-lg shadow-ocean-500/20 group-hover:scale-110 transition-transform duration-300">
@@ -831,7 +831,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
 
         {showInsight && (
             <div className="fixed inset-0 z-[60] bg-slate-950/80 backdrop-blur-md overflow-y-auto animate-in fade-in duration-300">
-                <div className="max-w-7xl mx-auto p-8">
+                <div className="max-w-7xl mx-auto p-4 md:p-8">
                     <div className="flex items-center justify-between mb-8">
                         <div>
                              <h2 className="text-3xl font-bold text-white mb-2">System Insight</h2>
@@ -1352,7 +1352,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
             {/* Scroll removed to allow menu overflow */}
             {/* Height calculated: 10 items * ~50px + header/padding. Fixed height prevents jumping. */}
             <div 
-                className="flex flex-col h-[560px]"
+                className="flex flex-col min-h-[500px] h-auto lg:h-[calc(100vh-14rem)] overflow-y-auto custom-scrollbar"
                 onWheel={handleContainerWheel}
             >
               {currentFiles.length === 0 ? (
@@ -1487,7 +1487,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
                       })
                   ) : (
                       /* GRID VIEW */
-                      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 p-3">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 p-3">
                           {currentFiles.map((file) => {
                              const ext = getFileExtension(file.filename);
                              const colorClasses = getFileTypeColor(file.filename);
