@@ -1500,7 +1500,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
                                     onClick={() => setSelectedFile(file)}
                                     className={`group relative aspect-square rounded-2xl border transition-all cursor-pointer flex flex-col items-center justify-center p-3 gap-2
                                         ${selectedFile?.id === file.id ? 'bg-ocean-500/10 border-ocean-500/50 shadow-[0_0_15px_rgba(6,182,212,0.15)] scale-[1.02]' : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10'}
-                                        ${activeMenuId === file.id ? 'z-50' : 'z-0'}
+                                        ${activeMenuId === file.id ? 'z-[100]' : 'z-0'}
                                     `}
                                  > 
                                      {/* Pin Indicator */}
@@ -1522,13 +1522,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
                                         </div>
                                     )}
 
-                                    <div className="text-center w-full z-0 relative">
-                                        <p className="text-xs font-medium text-slate-200 truncate w-full px-1 drop-shadow-sm">{file.filename}</p>
-                                        <p className="text-[9px] text-slate-500 mt-0.5">{formatSize(file.size)}</p>
+                                    <div className="text-center w-full px-1">
+                                        <p className="text-xs font-medium text-slate-200 truncate w-full drop-shadow-sm pointer-events-none">{file.filename}</p>
+                                        <p className="text-[9px] text-slate-500 mt-0.5 pointer-events-none">{formatSize(file.size)}</p>
                                     </div>
 
                                     {/* Action Menu (Moved to end for Z-Index stacking) */}
-                                    <div className={`absolute top-2 right-2 z-50 transition-opacity action-menu ${activeMenuId === file.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                                    <div className={`absolute top-2 right-2 z-[1000] transition-opacity action-menu ${activeMenuId === file.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
                                         <button 
                                             onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === file.id ? null : file.id); }}
                                             className="p-1 rounded-md bg-black/40 text-white hover:bg-black/60 transition-colors"
@@ -1537,7 +1537,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
                                         </button>
                                          {/* Dropdown Menu reused from list view logic, simplified for grid context if needed, but absolute positioning works */}
                                          {activeMenuId === file.id && (
-                                            <div className="absolute right-0 top-full mt-1 w-40 bg-slate-900 border border-slate-700 rounded-lg shadow-xl overflow-hidden z-[100] animate-in fade-in zoom-in-95 duration-200 flex flex-col">
+                                            <div className="absolute right-0 top-full mt-1 w-40 bg-slate-900 border border-slate-700 rounded-lg shadow-xl overflow-hidden z-[9999] animate-in fade-in zoom-in-95 duration-200 flex flex-col">
                                                  <div className="py-0.5">
                                                      <button onClick={() => handlePin(file)} className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-slate-300 hover:text-white hover:bg-white/10 transition-colors">
                                                          {file.is_pinned ? <PinOff size={12} className="text-amber-500" /> : <Pin size={12} className="text-slate-400" />} {file.is_pinned ? (t('unpin') || 'Unpin') : (t('pin') || 'Pin')}
