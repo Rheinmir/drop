@@ -6,6 +6,8 @@ import { Upload, FileText, Download, RefreshCw, LogOut, HardDrive, Clock, CheckC
 // @ts-ignore
 import Favico from 'favico.js';
 import { translations, Language } from '../translations';
+import { getFileExtension, getFileTypeColor, getFileIcon, isImageFile, formatSize } from '../utils/fileUtils';
+import { FileGridItem } from './FileGridItem';
 
 
 
@@ -13,108 +15,6 @@ interface DashboardProps {
   token: string;
   onLogout: () => void;
 }
-
-
-// Predefined colors for common file types
-// Predefined colors for common file types - High Contrast / Vibrant
-const FILE_TYPE_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  // Documents
-  pdf: { bg: 'bg-red-500/20', text: 'text-red-400', border: 'border-red-500/30' },
-  doc: { bg: 'bg-blue-600/20', text: 'text-blue-400', border: 'border-blue-600/30' },
-  docx: { bg: 'bg-blue-600/20', text: 'text-blue-400', border: 'border-blue-600/30' },
-  txt: { bg: 'bg-slate-500/20', text: 'text-slate-200', border: 'border-slate-500/30' },
-  md: { bg: 'bg-slate-600/20', text: 'text-white', border: 'border-slate-500/30' },
-  // Spreadsheets
-  xls: { bg: 'bg-emerald-600/20', text: 'text-emerald-400', border: 'border-emerald-600/30' },
-  xlsx: { bg: 'bg-emerald-600/20', text: 'text-emerald-400', border: 'border-emerald-600/30' },
-  csv: { bg: 'bg-green-500/20', text: 'text-green-400', border: 'border-green-500/30' },
-  // Images
-  jpg: { bg: 'bg-purple-600/20', text: 'text-purple-400', border: 'border-purple-600/30' },
-  jpeg: { bg: 'bg-purple-600/20', text: 'text-purple-400', border: 'border-purple-600/30' },
-  png: { bg: 'bg-purple-600/20', text: 'text-purple-400', border: 'border-purple-600/30' },
-  gif: { bg: 'bg-fuchsia-600/20', text: 'text-fuchsia-400', border: 'border-fuchsia-600/30' },
-  svg: { bg: 'bg-pink-600/20', text: 'text-pink-400', border: 'border-pink-600/30' },
-  webp: { bg: 'bg-purple-500/20', text: 'text-purple-400', border: 'border-purple-500/30' },
-  // Videos
-  mp4: { bg: 'bg-violet-600/20', text: 'text-violet-400', border: 'border-violet-600/30' },
-  mov: { bg: 'bg-violet-600/20', text: 'text-violet-400', border: 'border-violet-600/30' },
-  avi: { bg: 'bg-violet-500/20', text: 'text-violet-400', border: 'border-violet-500/30' },
-  mkv: { bg: 'bg-violet-700/20', text: 'text-violet-400', border: 'border-violet-700/30' },
-  // Audio
-  mp3: { bg: 'bg-cyan-600/20', text: 'text-cyan-400', border: 'border-cyan-600/30' },
-  wav: { bg: 'bg-cyan-500/20', text: 'text-cyan-400', border: 'border-cyan-500/30' },
-  flac: { bg: 'bg-sky-600/20', text: 'text-sky-400', border: 'border-sky-600/30' },
-  // Archives
-  zip: { bg: 'bg-yellow-600/20', text: 'text-yellow-400', border: 'border-yellow-600/30' },
-  rar: { bg: 'bg-orange-600/20', text: 'text-orange-400', border: 'border-orange-600/30' },
-  '7z': { bg: 'bg-orange-500/20', text: 'text-orange-400', border: 'border-orange-500/30' },
-  tar: { bg: 'bg-amber-600/20', text: 'text-amber-400', border: 'border-amber-600/30' },
-  // Code
-  js: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/30' },
-  ts: { bg: 'bg-blue-500/20', text: 'text-blue-400', border: 'border-blue-500/30' },
-  tsx: { bg: 'bg-blue-500/20', text: 'text-blue-400', border: 'border-blue-500/30' },
-  jsx: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/30' },
-  py: { bg: 'bg-lime-600/20', text: 'text-lime-400', border: 'border-lime-600/30' },
-  html: { bg: 'bg-orange-600/20', text: 'text-orange-400', border: 'border-orange-600/30' },
-  css: { bg: 'bg-blue-600/20', text: 'text-blue-400', border: 'border-blue-600/30' },
-  json: { bg: 'bg-gray-600/20', text: 'text-gray-300', border: 'border-gray-600/30' },
-};
-
-// Generate consistent high-contrast color from string hash
-const generateColorFromString = (str: string): { bg: string; text: string; border: string } => {
-  const hueOptions = [0, 30, 60, 120, 180, 210, 270, 300, 330];
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const hue = hueOptions[Math.abs(hash) % hueOptions.length];
-  
-  const colorMap: Record<number, { bg: string; text: string; border: string }> = {
-    0: { bg: 'bg-rose-500/20', text: 'text-rose-400', border: 'border-rose-500/30' },
-    30: { bg: 'bg-orange-500/20', text: 'text-orange-400', border: 'border-orange-500/30' },
-    60: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/30' },
-    120: { bg: 'bg-emerald-500/20', text: 'text-emerald-400', border: 'border-emerald-500/30' },
-    180: { bg: 'bg-teal-500/20', text: 'text-teal-400', border: 'border-teal-500/30' },
-    210: { bg: 'bg-sky-500/20', text: 'text-sky-400', border: 'border-sky-500/30' },
-    270: { bg: 'bg-violet-500/20', text: 'text-violet-400', border: 'border-violet-500/30' },
-    300: { bg: 'bg-fuchsia-500/20', text: 'text-fuchsia-400', border: 'border-fuchsia-500/30' },
-    330: { bg: 'bg-pink-500/20', text: 'text-pink-400', border: 'border-pink-500/30' },
-  };
-  
-  return colorMap[hue] || { bg: 'bg-slate-500/20', text: 'text-slate-300', border: 'border-slate-500/30' };
-};
-
-const getFileExtension = (filename: string): string => {
-  const parts = filename.split('.');
-  return parts.length > 1 ? parts.pop()?.toLowerCase() || '' : '';
-};
-
-const getFileTypeColor = (filename: string) => {
-  const ext = getFileExtension(filename);
-  return FILE_TYPE_COLORS[ext] || generateColorFromString(ext);
-};
-
-const getFileIcon = (filename: string) => {
-  const ext = getFileExtension(filename);
-  switch (ext) {
-    case 'jpg': case 'jpeg': case 'png': case 'gif': case 'webp': case 'svg': case 'bmp':
-      return FileImage;
-    case 'mp4': case 'mov': case 'avi': case 'mkv': case 'webm':
-      return FileVideo;
-    case 'mp3': case 'wav': case 'flac': case 'm4a': case 'ogg':
-      return FileAudio;
-    case 'xls': case 'xlsx': case 'csv': case 'ods':
-      return FileSpreadsheet;
-    case 'zip': case 'rar': case '7z': case 'tar': case 'gz':
-      return FileArchive;
-    case 'js': case 'ts': case 'tsx': case 'jsx': case 'py': case 'html': case 'css': case 'json': case 'java': case 'cpp':
-      return FileCode;
-    case 'pdf': case 'doc': case 'docx': case 'txt': case 'rtf': case 'md':
-      return FileText;
-    default:
-      return FileGeneric;
-  }
-};
 
 export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
   const [files, setFiles] = useState<FileRecord[]>([]);
@@ -501,12 +401,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
     }
   };
 
-  const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
-
-  const isImageFile = (filename: string): boolean => {
-    const ext = getFileExtension(filename);
-    return IMAGE_EXTENSIONS.includes(ext);
-  };
+  /* Removed local constants and helpers */
 
   const handleCopy = async (file: FileRecord) => {
     const ext = getFileExtension(file.filename);
@@ -896,7 +791,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
                                             >
                                                 {analyticsData.fileTypes.map((entry, index) => {
                                                     // Use predefined colors if available, otherwise fallback
-                                                    const predefined = FILE_TYPE_COLORS[entry.name.toLowerCase()];
+                                                    // Data used for color mapping below
                                                     // Parse bg-color/20 to hex or similar if possible?? 
                                                     // No, tailwind classes are strings. We need actual hex values for Recharts.
                                                     // Let's use a curated palette that matches the 'Ocean' theme + secondary accents.
@@ -1488,86 +1383,24 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
                   ) : (
                       /* GRID VIEW */
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 p-3">
-                          {currentFiles.map((file) => {
-                             const ext = getFileExtension(file.filename);
-                             const colorClasses = getFileTypeColor(file.filename);
-                             const IconComp = getFileIcon(file.filename);
-                             const isImg = isImageFile(file.filename);
-
-                             return (
-                                 <div 
-                                    key={file.id} 
-                                    onClick={() => setSelectedFile(file)}
-                                    className={`group relative aspect-square rounded-2xl border transition-all cursor-pointer flex flex-col items-center justify-center p-3 gap-2
-                                        ${selectedFile?.id === file.id ? 'bg-ocean-500/10 border-ocean-500/50 shadow-[0_0_15px_rgba(6,182,212,0.15)] scale-[1.02]' : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10'}
-                                        ${activeMenuId === file.id ? 'z-[100]' : 'z-0'}
-                                    `}
-                                 > 
-                                     {/* Pin Indicator */}
-                                     {!!file.is_pinned && <Pin size={12} className="absolute top-2 left-2 text-amber-400 rotate-45 z-10 drop-shadow-md" />}
-
-                                    {/* Content: Image Preview or Icon */}
-                                    {isImg ? (
-                                        <div className="flex-1 w-full h-full overflow-hidden rounded-xl relative">
-                                            <img 
-                                                src={getDownloadUrl(file.id, token)} 
-                                                alt={file.filename}
-                                                className="w-full h-full object-cover"
-                                                loading="lazy"
-                                            />
-                                        </div>
-                                    ) : (
-                                        <div className={`p-3 rounded-xl transition-colors ${file.is_pinned ? 'bg-amber-500/20 text-amber-400' : colorClasses.bg + ' ' + colorClasses.text}`}>
-                                            <IconComp size={28} strokeWidth={1.5} />
-                                        </div>
-                                    )}
-
-                                    <div className="text-center w-full px-1">
-                                        <p className="text-xs font-medium text-slate-200 truncate w-full drop-shadow-sm pointer-events-none">{file.filename}</p>
-                                        <p className="text-[9px] text-slate-500 mt-0.5 pointer-events-none">{formatSize(file.size)}</p>
-                                    </div>
-
-                                    {/* Action Menu (Moved to end for Z-Index stacking) */}
-                                    <div className={`absolute top-2 right-2 z-[1000] transition-opacity action-menu ${activeMenuId === file.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-                                        <button 
-                                            onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === file.id ? null : file.id); }}
-                                            className="p-1 rounded-md bg-black/40 text-white hover:bg-black/60 transition-colors"
-                                        >
-                                            <MoreVertical size={14} />
-                                        </button>
-                                         {/* Dropdown Menu reused from list view logic, simplified for grid context if needed, but absolute positioning works */}
-                                         {activeMenuId === file.id && (
-                                            <div className="absolute right-0 top-full mt-1 w-40 bg-slate-900 border border-slate-700 rounded-lg shadow-xl overflow-hidden z-[9999] animate-in fade-in zoom-in-95 duration-200 flex flex-col">
-                                                 <div className="py-0.5">
-                                                     <button onClick={() => handlePin(file)} className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-slate-300 hover:text-white hover:bg-white/10 transition-colors">
-                                                         {file.is_pinned ? <PinOff size={12} className="text-amber-500" /> : <Pin size={12} className="text-slate-400" />} {file.is_pinned ? (t('unpin') || 'Unpin') : (t('pin') || 'Pin')}
-                                                     </button>
-                                                     <button onClick={() => handleEditMeta(file)} className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-slate-300 hover:text-white hover:bg-white/10 transition-colors">
-                                                         <Database size={12} className="text-pink-400" /> {t('editInfo') || 'Edit Info'}
-                                                     </button>
-                                                     <button onClick={() => handleRename(file)} className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-slate-300 hover:text-white hover:bg-white/10 transition-colors">
-                                                         <Edit2 size={12} className="text-orange-400" /> {t('rename')}
-                                                     </button>
-                                                     <button onClick={() => handleCopy(file)} className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-slate-300 hover:text-white hover:bg-white/10 transition-colors">
-                                                         {copiedId === file.id ? <Check size={12} className="text-green-400" /> : <Copy size={12} className="text-blue-400" />} {copiedId === file.id ? 'Copied' : t('copyLink')}
-                                                     </button>
-                                                     <a href={getPreviewUrl(file.id, token)} target="_blank" rel="noopener noreferrer" className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-slate-300 hover:text-white hover:bg-white/10 transition-colors">
-                                                         <Eye size={12} className="text-indigo-400" /> {t('preview')}
-                                                     </a>
-                                                     <a href={getDownloadUrl(file.id, token)} target="_blank" rel="noopener noreferrer" className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-slate-300 hover:text-white hover:bg-white/10 transition-colors">
-                                                         <Download size={12} className="text-emerald-400" /> {t('download')}
-                                                     </a>
-                                                     <div className="h-px bg-slate-700/50 my-0.5"></div>
-                                                     <button onClick={() => handleDelete(file)} className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-red-400 hover:text-white hover:bg-red-500/20 transition-colors">
-                                                         <Trash2 size={12} /> {t('delete')}
-                                                     </button>
-                                                 </div>
-                                            </div>
-                                         )}
-                                    </div>
-                                 </div>
-                             )
-                          })}
+                          {currentFiles.map((file) => (
+                             <FileGridItem 
+                               key={file.id}
+                               file={file}
+                               token={token}
+                               activeMenuId={activeMenuId}
+                               selectedFile={selectedFile}
+                               copiedId={copiedId}
+                               t={t}
+                               setActiveMenuId={setActiveMenuId}
+                               setSelectedFile={setSelectedFile}
+                               handlePin={handlePin}
+                               handleEditMeta={handleEditMeta}
+                               handleRename={handleRename}
+                               handleCopy={handleCopy}
+                               handleDelete={handleDelete}
+                             />
+                          ))}
                       </div>
                   )}
                 </div>
