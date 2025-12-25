@@ -69,9 +69,9 @@ export const FileGridItem: React.FC<FileGridItemProps> = ({
           </div>
       )}
 
-      {/* Text Info - Static position, no Z-Index to stay below absolute elements */}
-      <div className="text-center w-full px-1">
-          <p className="text-xs font-medium text-slate-200 truncate w-full drop-shadow-sm pointer-events-none">{file.filename}</p>
+      {/* Text Info - Re-implemented to ensure no Z-Index conflict */}
+      <div className="text-center w-full px-1 relative z-0">
+          <p className="text-xs font-medium text-slate-200 truncate w-full pointer-events-none">{file.filename}</p>
           <p className="text-[9px] text-slate-500 mt-0.5 pointer-events-none">{formatSize(file.size)}</p>
       </div>
 
