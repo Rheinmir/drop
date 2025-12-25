@@ -1500,10 +1500,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
                                     onClick={() => setSelectedFile(file)}
                                     className={`group relative aspect-square rounded-2xl border transition-all cursor-pointer flex flex-col items-center justify-center p-3 gap-2
                                         ${selectedFile?.id === file.id ? 'bg-ocean-500/10 border-ocean-500/50 shadow-[0_0_15px_rgba(6,182,212,0.15)] scale-[1.02]' : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10'}
+                                        ${activeMenuId === file.id ? 'z-50' : 'z-0'}
                                     `}
                                  > 
                                     {/* Action Menu (Absolute Top Right) */}
-                                    <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity action-menu">
+                                    <div className={`absolute top-2 right-2 z-30 transition-opacity action-menu ${activeMenuId === file.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
                                         <button 
                                             onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === file.id ? null : file.id); }}
                                             className="p-1 rounded-md bg-black/40 text-white hover:bg-black/60 transition-colors"
