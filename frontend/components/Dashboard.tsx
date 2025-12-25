@@ -1503,7 +1503,31 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
                                         ${activeMenuId === file.id ? 'z-50' : 'z-0'}
                                     `}
                                  > 
-                                    {/* Action Menu (Absolute Top Right) */}
+                                     {/* Pin Indicator */}
+                                     {!!file.is_pinned && <Pin size={12} className="absolute top-2 left-2 text-amber-400 rotate-45 z-10 drop-shadow-md" />}
+
+                                    {/* Content: Image Preview or Icon */}
+                                    {isImg ? (
+                                        <div className="flex-1 w-full h-full overflow-hidden rounded-xl relative">
+                                            <img 
+                                                src={getDownloadUrl(file.id, token)} 
+                                                alt={file.filename}
+                                                className="w-full h-full object-cover"
+                                                loading="lazy"
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className={`p-3 rounded-xl transition-colors ${file.is_pinned ? 'bg-amber-500/20 text-amber-400' : colorClasses.bg + ' ' + colorClasses.text}`}>
+                                            <IconComp size={28} strokeWidth={1.5} />
+                                        </div>
+                                    )}
+
+                                    <div className="text-center w-full z-0 relative">
+                                        <p className="text-xs font-medium text-slate-200 truncate w-full px-1 drop-shadow-sm">{file.filename}</p>
+                                        <p className="text-[9px] text-slate-500 mt-0.5">{formatSize(file.size)}</p>
+                                    </div>
+
+                                    {/* Action Menu (Moved to end for Z-Index stacking) */}
                                     <div className={`absolute top-2 right-2 z-50 transition-opacity action-menu ${activeMenuId === file.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
                                         <button 
                                             onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === file.id ? null : file.id); }}
@@ -1540,30 +1564,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
                                                  </div>
                                             </div>
                                          )}
-                                    </div>
-
-                                     {/* Pin Indicator */}
-                                     {file.is_pinned && <Pin size={12} className="absolute top-2 left-2 text-amber-400 rotate-45 z-10 drop-shadow-md" />}
-
-                                    {/* Content: Image Preview or Icon */}
-                                    {isImg ? (
-                                        <div className="flex-1 w-full h-full overflow-hidden rounded-xl relative">
-                                            <img 
-                                                src={getDownloadUrl(file.id, token)} 
-                                                alt={file.filename}
-                                                className="w-full h-full object-cover"
-                                                loading="lazy"
-                                            />
-                                        </div>
-                                    ) : (
-                                        <div className={`p-3 rounded-xl transition-colors ${file.is_pinned ? 'bg-amber-500/20 text-amber-400' : colorClasses.bg + ' ' + colorClasses.text}`}>
-                                            <IconComp size={28} strokeWidth={1.5} />
-                                        </div>
-                                    )}
-
-                                    <div className="text-center w-full z-0 relative">
-                                        <p className="text-xs font-medium text-slate-200 truncate w-full px-1 drop-shadow-sm">{file.filename}</p>
-                                        <p className="text-[9px] text-slate-500 mt-0.5">{formatSize(file.size)}</p>
                                     </div>
                                  </div>
                              )
