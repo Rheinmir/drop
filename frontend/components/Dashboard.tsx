@@ -1504,7 +1504,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
                                     `}
                                  > 
                                     {/* Action Menu (Absolute Top Right) */}
-                                    <div className={`absolute top-2 right-2 z-30 transition-opacity action-menu ${activeMenuId === file.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                                    <div className={`absolute top-2 right-2 z-50 transition-opacity action-menu ${activeMenuId === file.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
                                         <button 
                                             onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === file.id ? null : file.id); }}
                                             className="p-1 rounded-md bg-black/40 text-white hover:bg-black/60 transition-colors"
@@ -1561,7 +1561,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
                                         </div>
                                     )}
 
-                                    <div className="text-center w-full z-10">
+                                    <div className="text-center w-full z-0 relative">
                                         <p className="text-xs font-medium text-slate-200 truncate w-full px-1 drop-shadow-sm">{file.filename}</p>
                                         <p className="text-[9px] text-slate-500 mt-0.5">{formatSize(file.size)}</p>
                                     </div>
