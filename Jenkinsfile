@@ -72,6 +72,7 @@ pipeline {
                      docker run -d --name ${CONTAINER_NAME} \
                          --restart unless-stopped \
                          -p ${HOST_PORT}:8000 \
+                         -v \$(pwd)/data:/app/data \
                          ${fullImageName}
                      """
                 }
