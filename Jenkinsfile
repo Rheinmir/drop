@@ -4,9 +4,9 @@ pipeline {
     environment {
         // Updated for QR Generator Project
         REGISTRY = 'ghcr.io'
-        IMAGE_REPO = 'rheinmir/qr-generator'
-        CONTAINER_NAME = 'qr-generator-server'
-        HOST_PORT = '5175'
+        IMAGE_REPO = 'rheinmir/drop'
+        CONTAINER_NAME = 'drop-server'
+        HOST_PORT = '8000'
     }
 
     triggers {
@@ -71,7 +71,7 @@ pipeline {
                      
                      docker run -d --name ${CONTAINER_NAME} \
                          --restart unless-stopped \
-                         -p ${HOST_PORT}:80 \
+                         -p ${HOST_PORT}:8000 \
                          ${fullImageName}
                      """
                 }
