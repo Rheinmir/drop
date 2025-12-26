@@ -651,8 +651,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
   const currentFiles = processedFiles.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(processedFiles.length / itemsPerPage);
 
-  return (
-    <div className="min-h-screen bg-slate-900 text-slate-200 p-4 md:p-8 font-sans transition-colors duration-500 selection:bg-ocean-500/30 overflow-x-hidden relative">
+    return (
+    <div className="min-h-screen bg-transparent text-slate-200 font-sans transition-colors duration-500 selection:bg-ocean-500/30 overflow-x-hidden relative">
       
       {/* Background Layer */}
       {bgImage && (
@@ -662,35 +662,43 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
         />
       )}
       
-      {/* Global Gradient/Overlay */}
-      <div className={`fixed inset-0 z-0 bg-gradient-to-br from-slate-900 via-slate-900/90 to-slate-800 pointer-events-none transition-opacity duration-500 ${bgImage ? 'opacity-80' : 'opacity-100'}`}></div>
-
-      <div className="max-w-7xl mx-auto relative z-10">
-        <header className="flex flex-col md:flex-row justify-between items-center mb-6 md:mb-8 gap-4 md:gap-0">
-          <div className="flex items-center gap-3 group">
+      {/* Mac-style Floating Header */}
+      <header className="fixed top-4 left-4 right-4 h-16 glass z-50 rounded-2xl px-4 flex items-center justify-between shadow-2xl transition-all duration-500 animate-[scale-in_0.3s_ease-out]">
+          {/* Logo Section */}
+          <div className="flex items-center gap-3 group pl-2">
             <div className="relative">
-               <div className="bg-gradient-to-br from-ocean-400 to-ocean-600 p-2.5 rounded-xl shadow-lg shadow-ocean-500/20 group-hover:scale-110 transition-transform duration-300">
-                 <HardDrive size={24} className="text-white" />
+               <div className="bg-gradient-to-br from-ocean-400 to-ocean-600 p-2 rounded-xl shadow-lg shadow-ocean-500/20 group-hover:scale-110 transition-transform duration-300">
+                 <HardDrive size={20} className="text-white" />
                </div>
-               <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-slate-900"></div>
+               <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-slate-900"></div>
             </div>
             <div>
-              <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400 tracking-tight">
+              <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400 tracking-tight">
                 {t('Drop')}
               </h1>
-              <div className="flex items-center gap-2">
-                 <span className="text-[10px] font-bold px-1.5 py-0.5 bg-ocean-500/20 text-ocean-300 rounded border border-ocean-500/10 tracking-wide">BETA</span>
-                 <span className="text-[10px] text-slate-500 font-medium">v1.2.0</span>
-              </div>
             </div>
           </div>
           
-          <div className="flex items-center gap-4">
+          {/* Center Search (Spotlight Style) */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm hidden md:block">
+             <div className="relative group/search">
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within/search:text-ocean-400 transition-colors" strokeWidth={2} />
+                <input 
+                  type="text" 
+                  placeholder={t('search')} 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 bg-slate-900/20 border border-white/5 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:bg-slate-900/40 focus:border-ocean-500/30 focus:shadow-[0_0_15px_rgba(14,165,233,0.1)] transition-all font-light backdrop-blur-sm"
+                />
+             </div>
+          </div>
+
+          {/* Right Actions */}
+          <div className="flex items-center gap-3 pr-2">
              {/* Clock */}
              <div 
                onClick={() => setUtcMode(!utcMode)}
-               className="hidden md:flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full border border-white/5 backdrop-blur-sm hover:bg-white/10 transition-colors cursor-pointer select-none"
-               title="Toggle UTC"
+               className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-lg border border-white/5 hover:bg-white/10 transition-colors cursor-pointer select-none"
              >
                 <Clock size={14} className="text-ocean-300" />
                 <span className="text-xs font-medium text-slate-300 tabular-nums tracking-wide">
@@ -698,38 +706,108 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
                 </span>
              </div>
 
+             <div className="h-6 w-px bg-white/10 hidden lg:block"></div>
+
+             {/* Language */}
              <div className="relative group/lang">
-                <button className="p-2.5 hover:bg-white/10 rounded-xl transition-all text-slate-400 hover:text-white border border-transparent hover:border-white/5">
-                  <Globe size={20} strokeWidth={1.5} />
+                <button className="p-2 hover:bg-white/10 rounded-lg transition-all text-slate-400 hover:text-white">
+                  <Globe size={18} strokeWidth={1.5} />
                 </button>
-                {/* Language Dropdown */}
-                <div className="absolute top-full right-0 pt-2 w-32 hidden group-hover/lang:block z-50">
-                    <div className="bg-slate-800 rounded-xl border border-white/10 shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2">
-                        <button onClick={() => setLang('en')} className={`w-full text-left px-4 py-2 text-sm hover:bg-white/5 ${lang === 'en' ? 'text-ocean-400 bg-white/5' : 'text-slate-300'}`}>English</button>
-                        <button onClick={() => setLang('vi')} className={`w-full text-left px-4 py-2 text-sm hover:bg-white/5 ${lang === 'vi' ? 'text-ocean-400 bg-white/5' : 'text-slate-300'}`}>Tiếng Việt</button>
-                        <button onClick={() => setLang('ja')} className={`w-full text-left px-4 py-2 text-sm hover:bg-white/5 ${lang === 'ja' ? 'text-ocean-400 bg-white/5' : 'text-slate-300'}`}>日本語</button>
+                <div className="absolute top-full right-0 pt-4 w-32 hidden group-hover/lang:block z-50">
+                    <div className="glass-panel rounded-xl overflow-hidden animate-in fade-in slide-in-from-top-2 p-1">
+                        {languages.map(l => (
+                          <button key={l.id} onClick={() => setLang(l.id)} className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-colors ${lang === l.id ? 'bg-white/10 text-ocean-400' : 'text-slate-300 hover:bg-white/5'}`}>{l.name}</button>
+                        ))}
                     </div>
                 </div>
              </div>
 
-             <div className="relative group/insight">
-                <button 
-                    onClick={() => setShowInsight(!showInsight)}
-                    className={`p-2.5 rounded-xl transition-all border border-transparent hover:border-white/5 ${showInsight ? 'bg-ocean-500/20 text-ocean-300' : 'text-slate-400 hover:bg-white/10 hover:text-white'}`}
-                    title="Insight"
-                >
-                  <PieChart size={20} strokeWidth={1.5} />
+             {/* Appearance */}
+             <div className="relative group/appearance">
+                <button className="p-2 hover:bg-white/10 rounded-lg transition-all text-slate-400 hover:text-white">
+                    <Palette size={18} strokeWidth={1.5} />
                 </button>
-             </div>
-          </div>
-        </header>
+                <div className="absolute top-full right-0 pt-4 w-72 hidden group-hover/appearance:block z-50">
+                    <div className="glass-heavy rounded-2xl p-4 shadow-2xl animate-in fade-in slide-in-from-top-2 border border-white/10">
+                        <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">Background</h3>
+                        <label className="flex items-center gap-3 p-3 bg-white/5 hover:bg-white/10 rounded-xl cursor-pointer transition-colors mb-4 border border-white/5 group/upload-bg">
+                            <div className="p-2 bg-ocean-500/20 rounded-lg text-ocean-400 group-hover/upload-bg:scale-110 transition-transform">
+                                <FileImage size={16} />
+                            </div>
+                            <div className="flex-1">
+                                <span className="text-sm text-white font-medium block">Upload Image</span>
+                                <span className="text-[10px] text-slate-500">Max 4MB</span>
+                            </div>
+                            <input type="file" className="hidden" accept="image/*" onChange={handleBgUpload} />
+                        </label>
+                        
+                        <div className="mb-4">
+                            <div className="flex justify-between text-xs text-slate-400 mb-2">
+                                <span>Opacity</span>
+                                <span>{Math.round(bgOpacity * 100)}%</span>
+                            </div>
+                            <input 
+                              type="range" min="0" max="1" step="0.05" value={bgOpacity} 
+                              onChange={(e) => updateBgOpacity(parseFloat(e.target.value))}
+                              className="w-full h-1.5 bg-slate-700 rounded-full appearance-none cursor-pointer accent-ocean-500"
+                            />
+                        </div>
 
+                        {bgImage && (
+                            <button 
+                              onClick={() => { setBgImage(null); localStorage.removeItem('dash_bg_image'); }}
+                              className="w-full flex items-center justify-center gap-2 p-2 text-red-400 hover:bg-red-500/10 rounded-lg text-xs font-medium transition-colors mb-4"
+                            >
+                                <Trash2 size={14} /> Remove Background
+                            </button>
+                        )}
+                        
+                        <div className="pt-4 border-t border-white/10">
+                            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">Theme</h3>
+                            <div className="grid grid-cols-3 gap-2">
+                                {themes.map(t => (
+                                    <button
+                                        key={t.id}
+                                        onClick={() => setTheme(t.id)}
+                                        className={`flex flex-col items-center justify-center gap-1 p-2 rounded-xl border transition-all ${theme === t.id ? 'bg-white/10 border-ocean-400 text-ocean-400' : 'bg-white/5 border-white/5 text-slate-400 hover:text-white hover:bg-white/10'}`}
+                                    >
+                                        <t.icon size={14} />
+                                        <span className="text-[10px] font-medium">{t.name}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+             </div>
+
+             {/* Insight */}
+             <button 
+                 onClick={() => setShowInsight(!showInsight)}
+                 className={`p-2 rounded-lg transition-all border border-transparent ${showInsight ? 'bg-ocean-500/20 text-ocean-300' : 'text-slate-400 hover:bg-white/10 hover:text-white'}`}
+             >
+               <PieChart size={18} strokeWidth={1.5} />
+             </button>
+             
+             <div className="h-6 w-px bg-white/10 ml-1 mr-1"></div>
+
+             {/* Logout */}
+             <button onClick={onLogout} className="p-2 hover:bg-red-500/10 text-slate-400 hover:text-red-400 rounded-lg transition-colors" title="Logout">
+                <LogOut size={18} strokeWidth={1.5} />
+             </button>
+          </div>
+      </header>
+
+      {/* Main Content Area */}
+      <div className="max-w-[1600px] mx-auto pt-24 pb-8 px-4 relative z-10">
+        
+        {/* Insight Modal Overlay */}
         {showInsight && (
-            <div className="fixed inset-0 z-[60] bg-slate-950/80 backdrop-blur-md overflow-y-auto animate-in fade-in duration-300">
-                <div className="max-w-7xl mx-auto p-4 md:p-8">
+            <div className="fixed inset-0 z-[60] bg-slate-950/60 backdrop-blur-md overflow-y-auto animate-in fade-in duration-300">
+                <div className="max-w-7xl mx-auto p-4 pt-20">
                     <div className="flex items-center justify-between mb-8">
                         <div>
-                             <h2 className="text-3xl font-bold text-white mb-2">System Insight</h2>
+                             <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">System Insight</h2>
                              <p className="text-slate-400">Traffic analysis and usage statistics</p>
                         </div>
                         <button onClick={() => setShowInsight(false)} className="p-2 hover:bg-white/10 rounded-full text-slate-400 hover:text-white transition-colors">
@@ -740,7 +818,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
                     {analyticsData ? (
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                             {/* Traffic Chart */}
-                            <div className="bg-slate-900/80 border border-white/10 rounded-3xl p-6 shadow-xl">
+                            <div className="glass-panel rounded-3xl p-6 shadow-xl">
                                 <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
                                     <ArrowUpDown size={20} className="text-ocean-400"/> Network Traffic (Last 7 Days)
                                 </h3>
@@ -773,7 +851,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
                             </div>
 
                             {/* File Types Pie Chart */}
-                            <div className="bg-slate-900/80 border border-white/10 rounded-3xl p-6 shadow-xl">
+                            <div className="glass-panel rounded-3xl p-6 shadow-xl">
                                 <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
                                     <PieChart size={20} className="text-purple-400"/> File Distribution
                                 </h3>
@@ -790,21 +868,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
                                                 dataKey="value"
                                             >
                                                 {analyticsData.fileTypes.map((entry, index) => {
-                                                    // Use predefined colors if available, otherwise fallback
-                                                    // Data used for color mapping below
-                                                    // Parse bg-color/20 to hex or similar if possible?? 
-                                                    // No, tailwind classes are strings. We need actual hex values for Recharts.
-                                                    // Let's use a curated palette that matches the 'Ocean' theme + secondary accents.
-                                                    const COLORS = [
-                                                        '#06b6d4', // Cyan (Ocean)
-                                                        '#3b82f6', // Blue
-                                                        '#8b5cf6', // Violet
-                                                        '#ec4899', // Pink
-                                                        '#10b981', // Emerald
-                                                        '#f59e0b', // Amber
-                                                        '#6366f1', // Indigo
-                                                        '#d946ef', // Fuchsia
-                                                    ];
+                                                    const COLORS = ['#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#10b981', '#f59e0b', '#6366f1', '#d946ef'];
                                                     return <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="rgba(255,255,255,0.05)" strokeWidth={2} />;
                                                 })}
                                             </Pie>
@@ -818,7 +882,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
                             </div>
                             
                             {/* Login History */}
-                            <div className="lg:col-span-2 bg-slate-900/80 border border-white/10 rounded-3xl p-6 shadow-xl">
+                            <div className="lg:col-span-2 glass-panel rounded-3xl p-6 shadow-xl">
                                 <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
                                     <Globe size={20} className="text-amber-400"/> Application Access Logs (Last 20)
                                 </h3>
@@ -849,7 +913,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
                             </div>
 
                             {/* Data Management */}
-                            <div className="lg:col-span-2 bg-slate-900/80 border border-white/10 rounded-3xl p-6 shadow-xl">
+                            <div className="lg:col-span-2 glass-panel rounded-3xl p-6 shadow-xl">
                                 <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
                                     <Database size={20} className="text-indigo-400"/> {t('actions')}
                                 </h3>
@@ -911,7 +975,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
             </div>
         )}
 
-
         {dragActive && (
           <div 
             className="fixed inset-0 z-50 bg-ocean-500/20 backdrop-blur-md border-[6px] border-ocean-400/50 border-dashed m-6 rounded-[2rem] flex items-center justify-center pointer-events-none transition-all duration-300"
@@ -926,13 +989,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
           </div>
         )}
 
-        <main className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <main className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* Upload Area */}
-        {/* Upload/Preview Section */}
-        <section className="lg:col-span-1 h-full min-h-[300px] lg:min-h-0 flex flex-col gap-6">
+        {/* Left Panel: Upload & Preview - Col Span 4 */}
+        <section className="lg:col-span-4 h-full flex flex-col gap-6">
           <div 
-            className={`relative h-full bg-white/5 backdrop-blur-md rounded-3xl border ${dragActive ? 'border-ocean-400 bg-ocean-500/10' : 'border-white/10'} shadow-2xl flex flex-col items-center justify-center text-center p-8 transition-all overflow-hidden group/upload`}
+            className={`relative h-full min-h-[400px] glass rounded-3xl ${dragActive ? 'border-ocean-400 bg-ocean-500/10' : ''} shadow-2xl flex flex-col items-center justify-center text-center p-6 transition-all overflow-hidden group/upload`}
             onDragEnter={onDrag}
             onDragLeave={onDrag}
             onDragOver={onDrag}
@@ -1003,7 +1065,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
                       </button>
                    </div>
                    
-                   {/* Info/Title Overlay (Bottom) */}
+                   {/* Info/Title Overlay (Bottom) - Floating Glass */}
                    <div className="absolute bottom-6 left-6 right-6 z-10 flex flex-col items-center gap-3 pointer-events-none"> 
                       <div className="bg-black/30 backdrop-blur-md px-5 py-2.5 rounded-2xl border border-white/10 shadow-lg max-w-full">
                           <p className="text-white font-light text-sm tracking-wide truncate">
@@ -1035,7 +1097,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
 
              {/* Action Buttons */}
              {selectedFile ? (
-                 /* Minified Browse Button (Top Right) */
                  <label className="absolute top-4 right-4 z-20 cursor-pointer group/btn">
                     <input 
                        type="file" 
@@ -1048,7 +1109,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
                     </div>
                  </label>
              ) : (
-                 /* Main Upload UI (Humanized) */
                  <div className="relative z-10 flex flex-col items-center justify-center">
                     <h2 className="text-3xl font-thin text-white mb-2 tracking-wider">Add Content</h2>
                     <p className="text-slate-400 font-light text-sm mb-8 tracking-wide opacity-70 max-w-[240px]">
@@ -1072,7 +1132,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
           </div>
           
            {/* Stored Files Stats */}
-           <div className="flex flex-col items-center justify-center p-6 bg-white/5 rounded-3xl border border-white/10 shadow-lg backdrop-blur-md">
+           <div className="flex flex-col items-center justify-center p-6 glass rounded-3xl shadow-lg">
               <h2 className="text-xl font-light text-white mb-4 text-center tracking-wider">{t('storedFiles')}</h2>
               <div className="flex flex-row gap-3 w-full justify-center">
                   <span className="text-sm font-light text-slate-300 bg-black/20 rounded-xl py-2 px-4 border border-white/5 min-w-[80px] text-center">{processedFiles.length} {t('items')}</span>
@@ -1083,92 +1143,23 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
            </div>
         </section>
 
-        <section className="lg:col-span-2">
-          {/* Removed overflow-hidden to allow dropdown to show */}
-          <div className="bg-white/5 backdrop-blur-sm rounded-3xl border border-white/10 shadow-xl flex flex-col">
-            
-            {/* Minimalist Header */}
-            <div className="px-6 pt-6 pb-5 border-b border-white/5 flex flex-col xl:flex-row gap-6 justify-between items-center relative z-20">
-              
-              {/* Title & Stats Container */}
-              {/* Title & Stats Removed (Moved to Left) */}
-              <div className="hidden xl:block"></div>
-
-              {/* Controls */}
-              <div className="flex flex-col sm:flex-row gap-3 w-full xl:w-auto items-center">
-                 {/* Appearance Settings */}
-                 <div className="relative group/appearance">
-                    <button className="p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 text-slate-400 hover:text-white transition-colors" title="Appearance">
-                        <Palette size={18} strokeWidth={1.5} />
-                    </button>
-                    <div className="absolute top-full right-0 pt-2 w-64 hidden group-hover/appearance:block z-50">
-                        <div className="bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-4 animate-in fade-in slide-in-from-top-2">
-                            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Background</h3>
-                            <label className="flex items-center gap-3 p-3 bg-white/5 hover:bg-white/10 rounded-xl cursor-pointer transition-colors mb-4 border border-white/5 group/upload-bg">
-                                <div className="p-2 bg-ocean-500/20 rounded-lg text-ocean-400 group-hover/upload-bg:scale-110 transition-transform">
-                                    <FileImage size={16} />
-                                </div>
-                                <div className="flex-1">
-                                    <span className="text-sm text-white font-medium block">Upload Image</span>
-                                    <span className="text-[10px] text-slate-500">Max 4MB</span>
-                                </div>
-                                <input type="file" className="hidden" accept="image/*" onChange={handleBgUpload} />
-                            </label>
-                            
-                            <div className="mb-4">
-                                <div className="flex justify-between text-xs text-slate-400 mb-2">
-                                    <span>Opacity</span>
-                                    <span>{Math.round(bgOpacity * 100)}%</span>
-                                </div>
-                                <input 
-                                type="range" 
-                                min="0" 
-                                max="1" 
-                                step="0.05" 
-                                value={bgOpacity} 
-                                onChange={(e) => updateBgOpacity(parseFloat(e.target.value))}
-                                className="w-full h-1.5 bg-slate-700 rounded-full appearance-none cursor-pointer accent-ocean-500"
-                                />
-                            </div>
-
-                            {bgImage && (
-                                <button 
-                                onClick={() => { setBgImage(null); localStorage.removeItem('dash_bg_image'); }}
-                                className="w-full flex items-center justify-center gap-2 p-2 text-red-400 hover:bg-red-500/10 rounded-lg text-xs font-medium transition-colors"
-                                >
-                                    <Trash2 size={14} /> Remove Background
-                                </button>
-                            )}
-                            
-                            <div className="mt-4 pt-4 border-t border-white/10">
-                                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Theme</h3>
-                                <div className="grid grid-cols-3 gap-2">
-                                    {themes.map(t => (
-                                        <button
-                                            key={t.id}
-                                            onClick={() => setTheme(t.id)}
-                                            className={`flex flex-col items-center justify-center gap-1 p-2 rounded-xl border transition-all ${theme === t.id ? 'bg-white/10 border-ocean-400 text-ocean-400' : 'bg-white/5 border-white/5 text-slate-400 hover:text-white hover:bg-white/10'}`}
-                                        >
-                                            <t.icon size={14} />
-                                            <span className="text-[10px] font-medium">{t.name}</span>
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                 </div>
-                 
-                 {/* Filters */}
+        {/* Right Panel: File List - Col Span 8 */}
+        <section className="lg:col-span-8 flex flex-col gap-6">
+          
+          {/* Controls Bar (Glass) */}
+          <div className="glass rounded-2xl p-2 flex flex-col sm:flex-row gap-3 items-center justify-between sticky top-24 z-30 transition-all duration-300">
+             
+             <div className="flex items-center gap-2 w-full sm:w-auto">
+                {/* Filters */}
                  {(uniqueGroups.length > 0 || uniqueTags.length > 0) && (
-                     <div className="flex items-center gap-2 bg-white/5 rounded-xl p-1 border border-white/5">
+                     <div className="flex items-center gap-1 bg-white/5 rounded-xl p-1 border border-white/5">
                         {uniqueGroups.length > 0 && (
                             <div className="relative group/filter-group">
                                 <button className={`p-2 rounded-lg transition-all ${selectedGroup !== 'all' ? 'text-ocean-400 bg-white/10' : 'text-slate-500 hover:text-slate-300'}`}>
                                     <Layers size={18} strokeWidth={1.5} />
                                 </button>
-                                <div className="absolute top-full right-0 pt-2 w-48 hidden group-hover/filter-group:block z-50">
-                                    <div className="bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 p-1">
+                                <div className="absolute top-full left-0 pt-2 w-48 hidden group-hover/filter-group:block z-50">
+                                    <div className="glass-heavy border border-white/10 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 p-1">
                                         <button onClick={() => setSelectedGroup('all')} className={`w-full text-left px-3 py-2 text-xs rounded-lg ${selectedGroup === 'all' ? 'text-white bg-white/10' : 'text-slate-400 hover:bg-white/5'}`}>All Groups</button>
                                         {uniqueGroups.map(g => (
                                             <button key={g} onClick={() => setSelectedGroup(g)} className={`w-full text-left px-3 py-2 text-xs rounded-lg ${selectedGroup === g ? 'text-white bg-white/10' : 'text-slate-400 hover:bg-white/5'}`}>{g}</button>
@@ -1182,8 +1173,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
                                 <button className={`p-2 rounded-lg transition-all ${selectedTag !== 'all' ? 'text-ocean-400 bg-white/10' : 'text-slate-500 hover:text-slate-300'}`}>
                                     <Tag size={18} strokeWidth={1.5} />
                                 </button>
-                                <div className="absolute top-full right-0 pt-2 w-48 hidden group-hover/filter-tag:block z-50">
-                                    <div className="bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 p-1">
+                                <div className="absolute top-full left-0 pt-2 w-48 hidden group-hover/filter-tag:block z-50">
+                                    <div className="glass-heavy border border-white/10 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 p-1">
                                         <button onClick={() => setSelectedTag('all')} className={`w-full text-left px-3 py-2 text-xs rounded-lg ${selectedTag === 'all' ? 'text-white bg-white/10' : 'text-slate-400 hover:bg-white/5'}`}>All Tags</button>
                                         {uniqueTags.map(t => (
                                             <button key={t} onClick={() => setSelectedTag(t)} className={`w-full text-left px-3 py-2 text-xs rounded-lg ${selectedTag === t ? 'text-white bg-white/10' : 'text-slate-400 hover:bg-white/5'}`}>{t}</button>
@@ -1195,7 +1186,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
                      </div>
                  )}
 
-                 <div className="flex items-center gap-2 bg-white/5 rounded-xl p-1 border border-white/5">
+                 <div className="flex items-center gap-1 bg-white/5 rounded-xl p-1 border border-white/5">
                     <button 
                         onClick={() => setViewMode('grid')}
                         className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white/10 text-ocean-400 shadow-sm' : 'text-slate-500 hover:text-slate-300'}`}
@@ -1209,45 +1200,34 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
                         <List size={18} strokeWidth={1.5} />
                     </button>
                  </div>
+             </div>
 
-                 <div className="relative group/sort flex-1 sm:flex-none">
-                    <button className="w-full sm:w-auto flex items-center gap-2 px-4 py-2.5 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 text-slate-300 hover:text-white transition-all text-sm font-light">
-                        <ArrowUpDown size={16} strokeWidth={1.5} />
-                        <span className="capitalize">{sortBy.replace('_', ' ')}</span>
-                    </button>
-                    {/* Sort Dropdown */}
-                    <div className="absolute top-full right-0 pt-2 w-48 hidden group-hover/sort:block z-50">
-                        <div className="bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2">
-                            {['date_desc', 'date_asc', 'name_asc', 'name_desc', 'size_desc', 'size_asc', 'type_asc', 'type_desc'].map(opt => (
-                                <button 
-                                    key={opt}
-                                    onClick={() => setSortBy(opt as any)}
-                                    className={`w-full text-left px-4 py-2.5 text-sm hover:bg-white/5 transition-colors border-b border-white/5 last:border-0 ${sortBy === opt ? 'text-ocean-400 bg-white/5' : 'text-slate-400'}`}
-                                >
-                                    {opt.replace('_', ' ').replace('desc', '↓').replace('asc', '↑').replace('type', 'Type')}
-                                </button>
-                            ))}
-                        </div>
+             <div className="relative group/sort flex-1 sm:flex-none">
+                <button className="w-full sm:w-auto flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 text-slate-300 hover:text-white transition-all text-xs font-medium">
+                    <span className="text-slate-500">Sort by:</span>
+                    <span className="capitalize">{sortBy.replace('_', ' ')}</span>
+                    <ArrowUpDown size={14} strokeWidth={1.5} />
+                </button>
+                {/* Sort Dropdown */}
+                <div className="absolute top-full right-0 pt-2 w-48 hidden group-hover/sort:block z-50">
+                    <div className="glass-heavy border border-white/10 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 p-1">
+                        {['date_desc', 'date_asc', 'name_asc', 'name_desc', 'size_desc', 'size_asc', 'type_asc', 'type_desc'].map(opt => (
+                            <button 
+                                key={opt}
+                                onClick={() => setSortBy(opt as any)}
+                                className={`w-full text-left px-3 py-2 text-xs rounded-lg transition-colors ${sortBy === opt ? 'text-ocean-400 bg-white/10' : 'text-slate-400 hover:bg-white/5'}`}
+                            >
+                                {opt.replace('_', ' ').replace('desc', '↓').replace('asc', '↑').replace('type', 'Type')}
+                            </button>
+                        ))}
                     </div>
-                 </div>
-                 
-                 <div className="relative flex-1 sm:flex-none">
-                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" strokeWidth={1.5} />
-                    <input 
-                      type="text" 
-                      placeholder={t('search')} 
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full sm:w-48 pl-10 pr-4 py-2.5 bg-white/5 border border-white/5 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-ocean-500/50 focus:bg-white/10 transition-all font-light"
-                    />
-                 </div>
-              </div>
-            </div>
-            
-            {/* Scroll removed to allow menu overflow */}
-            {/* Height calculated: 10 items * ~50px + header/padding. Fixed height prevents jumping. */}
+                </div>
+             </div>
+          </div>
+
+          <div className="glass rounded-3xl border border-white/10 shadow-xl flex flex-col min-h-[600px] h-[calc(100vh-16rem)] transition-all duration-300">
             <div 
-                className="flex flex-col min-h-[500px] h-auto lg:h-[calc(100vh-14rem)] overflow-y-auto custom-scrollbar"
+                className="flex flex-col flex-1 overflow-y-auto custom-scrollbar p-1"
                 onWheel={handleContainerWheel}
             >
               {currentFiles.length === 0 ? (
@@ -1268,40 +1248,30 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
                           <div 
                             key={file.id}
                             onClick={() => setSelectedFile(file)}
-                            className={`group flex items-center justify-between px-4 py-2 hover:bg-white/5 transition-colors border-b border-white/5 last:border-0 cursor-pointer ${file.is_pinned ? 'bg-amber-500/5' : ''} ${selectedFile?.id === file.id ? 'bg-ocean-500/10 hover:bg-ocean-500/20 border-l-2 border-l-ocean-400' : ''}`}
+                            className={`group flex items-center justify-between px-4 py-3 hover:bg-white/5 transition-colors border-b border-white/5 last:border-0 cursor-pointer ${file.is_pinned ? 'bg-amber-500/5' : ''} ${selectedFile?.id === file.id ? 'bg-ocean-500/10 hover:bg-ocean-500/20' : ''}`}
                           >
-                            <div className="flex items-center gap-3 min-w-0">
-                              <div className={`p-1.5 rounded-md transition-colors ${file.is_pinned ? 'bg-amber-500/20 text-amber-400' : colorClasses.text}`}>
-                                {file.is_pinned ? <Pin size={16} className="rotate-45" /> : <IconComp size={16} />}
+                            <div className="flex items-center gap-4 min-w-0">
+                              <div className={`p-2 rounded-xl transition-colors ${file.is_pinned ? 'bg-amber-500/20 text-amber-400' : colorClasses.bg + ' ' + colorClasses.text}`}>
+                                {file.is_pinned ? <Pin size={18} className="rotate-45" /> : <IconComp size={18} />}
                               </div>
-                              <div className="min-w-0">
-                                <div className="flex items-center gap-2 mb-0.5">
-                                  <h4 className={`text-sm truncate transition-colors max-w-[140px] sm:max-w-[200px] ${file.is_pinned ? 'text-amber-100 font-medium' : 'text-slate-200 group-hover:text-white'}`}>{file.filename}</h4>
-                                  {ext && (
-                                    <span className={`px-1.5 py-px text-[9px] font-semibold uppercase rounded-md border ${colorClasses.bg} ${colorClasses.text} ${colorClasses.border} opacity-70 group-hover:opacity-100`}>
-                                      {ext}
-                                    </span>
-                                  )}
+                              <div className="min-w-0 flex flex-col gap-0.5">
+                                <div className="flex items-center gap-2">
+                                  <h4 className={`text-sm truncate transition-colors max-w-[200px] sm:max-w-[300px] ${file.is_pinned ? 'text-amber-100 font-medium' : 'text-slate-200 group-hover:text-white'}`}>{file.filename}</h4>
                                   {file.group_name && (
-                                    <span className="px-1.5 py-px text-[9px] font-medium rounded-md bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 truncate max-w-[80px]">
+                                    <span className="px-1.5 py-0.5 text-[9px] font-medium rounded-md bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                                       {file.group_name}
                                     </span>
                                   )}
                                 </div>
                                 <div className="flex items-center gap-3 text-[10px] text-slate-500">
-                                  <span className="flex items-center gap-1">
-                                    <HardDrive size={10} /> {formatSize(file.size)}
-                                  </span>
-                                  <span className="flex items-center gap-1">
-                                    <Clock size={10} /> {formatDate(file.upload_time)}
-                                  </span>
+                                  <span>{formatSize(file.size)}</span>
+                                  <span className="w-1 h-1 rounded-full bg-slate-700"></span>
+                                  <span>{formatDate(file.upload_time)}</span>
                                   {file.tags && (
-                                    <span className="flex items-center gap-1 text-slate-400 hidden sm:flex">
-                                      <Tag size={10} />
-                                      <span className="truncate max-w-[150px]">
-                                        {file.tags}
-                                      </span>
-                                    </span>
+                                      <>
+                                       <span className="w-1 h-1 rounded-full bg-slate-700 hidden sm:block"></span>
+                                       <span className="truncate max-w-[150px] hidden sm:block">{file.tags}</span>
+                                      </>
                                   )}
                                 </div>
                               </div>
@@ -1311,69 +1281,42 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
                             <div className="relative action-menu" style={{ zIndex: activeMenuId === file.id ? 20 : 'auto' }}>
                               <button
                                 onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === file.id ? null : file.id); }}
-                                className={`p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-white/10 transition-all ${activeMenuId === file.id ? 'bg-white/10 text-white' : 'opacity-0 group-hover:opacity-100'}`}
+                                className={`p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-all ${activeMenuId === file.id ? 'bg-white/10 text-white' : 'opacity-0 group-hover:opacity-100'}`}
                               >
                                 <MoreVertical size={16} />
                               </button>
 
                               {activeMenuId === file.id && (
-                                <div className="absolute right-0 top-full mt-1 w-40 bg-slate-900 border border-slate-700 rounded-lg shadow-xl overflow-hidden z-[100] animate-in fade-in zoom-in-95 duration-200">
-                                  <div className="py-0.5">
-                                      <button
-                                        onClick={() => handlePin(file)}
-                                        className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
-                                      >
-                                        {file.is_pinned ? <PinOff size={12} className="text-amber-500" /> : <Pin size={12} className="text-slate-400" />}
+                                <div className="absolute right-0 top-full mt-1 w-48 glass-heavy border border-white/10 rounded-xl shadow-2xl overflow-hidden z-[100] animate-in fade-in zoom-in-95 duration-200 p-1">
+                                      <button onClick={() => handlePin(file)} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+                                        {file.is_pinned ? <PinOff size={14} className="text-amber-500" /> : <Pin size={14} className="text-slate-400" />}
                                         {file.is_pinned ? (t('unpin') || 'Unpin') : (t('pin') || 'Pin')}
                                       </button>
-                                      <button
-                                        onClick={() => handleEditMeta(file)}
-                                        className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
-                                      >
-                                        <Database size={12} className="text-pink-400" />
+                                      <button onClick={() => handleEditMeta(file)} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+                                        <Database size={14} className="text-pink-400" />
                                         {t('editInfo') || 'Edit Info'}
                                       </button>
-                                      <button
-                                        onClick={() => handleRename(file)}
-                                        className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
-                                      >
-                                        <Edit2 size={12} className="text-orange-400" />
+                                      <button onClick={() => handleRename(file)} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+                                        <Edit2 size={14} className="text-orange-400" />
                                         {t('rename')}
                                       </button>
-                                      <button
-                                        onClick={() => handleCopy(file)}
-                                        className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
-                                      >
-                                        {copiedId === file.id ? <Check size={12} className="text-green-400" /> : <Copy size={12} className="text-blue-400" />}
+                                      <button onClick={() => handleCopy(file)} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+                                        {copiedId === file.id ? <Check size={14} className="text-green-400" /> : <Copy size={14} className="text-blue-400" />}
                                         {copiedId === file.id ? 'Copied' : t('copyLink')}
                                       </button>
-                                      <a 
-                                        href={getPreviewUrl(file.id, token)}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
-                                      >
-                                        <Eye size={12} className="text-indigo-400" />
+                                      <a href={getPreviewUrl(file.id, token)} target="_blank" rel="noopener noreferrer" className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+                                        <Eye size={14} className="text-indigo-400" />
                                         {t('preview')}
                                       </a>
-                                      <a 
-                                        href={getDownloadUrl(file.id, token)}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
-                                      >
-                                        <Download size={12} className="text-emerald-400" />
+                                      <a href={getDownloadUrl(file.id, token)} target="_blank" rel="noopener noreferrer" className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+                                        <Download size={14} className="text-emerald-400" />
                                         {t('download')}
                                       </a>
-                                      <div className="h-px bg-slate-700/50 my-0.5"></div>
-                                      <button
-                                        onClick={() => handleDelete(file)}
-                                        className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-red-400 hover:text-white hover:bg-red-500/20 transition-colors"
-                                      >
-                                        <Trash2 size={12} />
+                                      <div className="h-px bg-white/10 my-1 mx-2"></div>
+                                      <button onClick={() => handleDelete(file)} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-400 hover:text-white hover:bg-red-500/20 rounded-lg transition-colors">
+                                        <Trash2 size={14} />
                                         {t('delete')}
                                       </button>
-                                  </div>
                                 </div>
                               )}
                             </div>
@@ -1382,7 +1325,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
                       })
                   ) : (
                       /* GRID VIEW */
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 p-3">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6 gap-4 p-4">
                           {currentFiles.map((file) => (
                              <FileGridItem 
                                key={file.id}
@@ -1408,8 +1351,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
             </div>
 
             {/* Pagination Controls */}
-            {/* Pagination Controls */}
-              <div className="px-4 py-3 border-t border-white/5 flex justify-center items-center gap-4 bg-white/5">
+              <div className="px-4 py-3 border-t border-white/5 flex justify-center items-center gap-4 bg-white/5 backdrop-blur-sm rounded-b-3xl">
                  <button 
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
@@ -1449,7 +1391,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
       {/* Edit Meta Modal */}
       {editingFile && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-           <div className="bg-slate-900 border border-white/10 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+           <div className="glass-heavy border border-white/10 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
               <div className="px-6 py-4 border-b border-white/5 flex justify-between items-center bg-white/5">
                  <h3 className="text-lg font-medium text-white">{t('editInfo') || 'Edit Info'}</h3>
                  <button onClick={() => setEditingFile(null)} className="text-slate-400 hover:text-white transition-colors">
@@ -1472,7 +1414,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
                            type="text" 
                            value={editGroup}
                            onChange={(e) => setEditGroup(e.target.value)}
-                           className="w-full bg-slate-800 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-ocean-500 transition-colors"
+                           className="w-full bg-slate-800/50 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-ocean-500 transition-colors"
                            placeholder="Ex: Work, Personal, Project A..."
                         />
                         <Layers size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
@@ -1488,7 +1430,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
 
                  <div>
                     <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">{t('tags') || 'Tags'}</label>
-                    <div className="bg-slate-800 border border-white/10 rounded-xl px-3 py-2 flex flex-wrap gap-2 focus-within:border-ocean-500 transition-colors min-h-[46px]">
+                    <div className="bg-slate-800/50 border border-white/10 rounded-xl px-3 py-2 flex flex-wrap gap-2 focus-within:border-ocean-500 transition-colors min-h-[46px]">
                         {editTags.split(',').map(t => t.trim()).filter(Boolean).map(tag => (
                             <span key={tag} className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs font-medium animate-in zoom-in duration-200">
                                 {tag}
@@ -1551,4 +1493,3 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
     </div>
   );
 };
-
