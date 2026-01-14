@@ -91,6 +91,7 @@ pipeline {
                     // Remove older images of this repository
                     sh """
                     docker images --format '{{.Repository}}:{{.Tag}}' | grep '${REGISTRY}/${IMAGE_REPO}' | grep -v '${gitCommit}' | grep -v 'latest' | xargs -r docker rmi || true
+                    docker rmi ${REGISTRY}/${IMAGE_REPO}:latest || true
                     """
                 }
             }
