@@ -144,7 +144,7 @@ export const FileGridItem: React.FC<FileGridItemProps> = ({
            {/* Portal Menu */}
            {isActive && createPortal(
               <div 
-                  className={`fixed inset-0 z-[9998] cursor-default`} 
+                  className={`fixed inset-0 z-[9998] cursor-default action-menu`} 
                   onClick={(e) => { e.stopPropagation(); setActiveMenuId(null); }}
               >
                   <div 

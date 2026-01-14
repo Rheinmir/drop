@@ -494,13 +494,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
   };
 
   const handlePin = async (file: FileRecord) => {
+    setActiveMenuId(null); // Close menu first to prevent stale data issues
     try {
-      const res = await togglePin(file.id, token);
-      setFiles(prev => prev.map(f => f.id === file.id ? { ...f, is_pinned: res.is_pinned } : f));
+      await togglePin(file.id, token);
+      loadData(); // Reload all data to ensure consistency
     } catch (err) {
       console.error(err);
     }
-    setActiveMenuId(null);
   };
 
   const handleEditMeta = (file: FileRecord) => {
