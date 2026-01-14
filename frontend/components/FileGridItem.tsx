@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Pin, PinOff, Database, Edit2, Copy, Check, Eye, Download, Trash2, MoreVertical } from 'lucide-react';
 import { FileRecord } from '../types';
 import { getDownloadUrl, getPreviewUrl } from '../services/api';
@@ -40,7 +41,59 @@ export const FileGridItem: React.FC<FileGridItemProps> = ({
   const IconComp = getFileIcon(file.filename);
   const isImg = isImageFile(file.filename);
   const isActive = activeMenuId === file.id;
-  const [menuPosition, setMenuPosition] = React.useState<'top' | 'bottom'>('bottom');
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [menuStyle, setMenuStyle] = useState<React.CSSProperties>({});
+  const [menuOrigin, setMenuOrigin] = useState('origin-top-right');
+
+  useEffect(() => {
+    if (isActive && buttonRef.current) {
+        const updatePosition = () => {
+            if (!buttonRef.current) return;
+            const rect = buttonRef.current.getBoundingClientRect();
+            const scrollY = window.scrollY;
+            const scrollX = window.scrollX;
+            const menuHeight = 300; // Approx height
+            const spaceBelow = window.innerHeight - rect.bottom;
+            
+            let top: number;
+            let originClass: string;
+
+            if (spaceBelow < menuHeight) {
+                // Not enough space below, open upwards
+                top = rect.top + scrollY - 8; // 8px spacing
+                originClass = 'origin-bottom-right';
+                // We will use 'bottom' css property if we could, but calculating absolute top is safer for portal
+                // Actually, to make it expand upwards from the button, we need it to end at rect.top
+                // But since we render a div with relative flow inside portal, we usually position top-left.
+                // To anchor bottom-right of menu to button:
+                // We'll set top to (rect.top + scrollY) and use translateY(-100%) or just calculate top = rect.top + scrollY - height?
+                // Auto height is tricky. Better to let it flow naturally?
+                // Let's stick to dynamic top/bottom placement.
+            } else {
+                top = rect.bottom + scrollY + 8;
+                originClass = 'origin-top-right';
+            }
+
+            setMenuStyle({
+                position: 'absolute',
+                top: spaceBelow < menuHeight ? 'auto' : top,
+                bottom: spaceBelow < menuHeight ? window.innerHeight - rect.top - scrollY + 8 : 'auto',
+                left: rect.right + scrollX - 192, // 192px = w-48
+                zIndex: 9999
+            });
+            setMenuOrigin(originClass);
+        };
+
+        updatePosition();
+        window.addEventListener('scroll', updatePosition);
+        window.addEventListener('resize', updatePosition);
+        
+        return () => {
+            window.removeEventListener('scroll', updatePosition);
+            window.removeEventListener('resize', updatePosition);
+        }
+    }
+  }, [isActive]);
 
   return (
     <div 
@@ -79,51 +132,53 @@ export const FileGridItem: React.FC<FileGridItemProps> = ({
        {/* Action Menu (Absolute Positioned with High Z-Index) */}
        <div className={`absolute top-2 right-2 z-[1000] transition-all duration-200 action-menu ${isActive ? 'opacity-100 scale-100' : 'opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100'}`}>
           <button 
+              ref={buttonRef}
               onClick={(e) => { 
                 e.stopPropagation(); 
-                if (!isActive) {
-                    const rect = e.currentTarget.getBoundingClientRect();
-                    const spaceBelow = window.innerHeight - rect.bottom;
-                    setMenuPosition(spaceBelow < 300 ? 'top' : 'bottom'); // 300px threshold for menu height
-                }
                 setActiveMenuId(isActive ? null : file.id); 
               }}
               className={`p-1.5 rounded-lg backdrop-blur-md transition-colors ${isActive ? 'bg-white/20 text-white' : 'bg-black/40 text-white/80 hover:bg-black/60 hover:text-white'}`}
           >
               <MoreVertical size={14} />
           </button>
-           {/* Dropdown Menu */}
-           {isActive && (
-              <div className={`absolute right-0 w-48 glass-heavy border border-white/10 rounded-xl shadow-2xl overflow-hidden z-[9999] animate-in fade-in zoom-in-95 duration-200 flex flex-col p-1.5 ring-1 ring-black/5 ${
-                  menuPosition === 'top' 
-                      ? 'bottom-full mb-2 origin-bottom-right' 
-                      : 'top-full mt-2 origin-top-right'
-              }`}>
-                   <div className="flex flex-col gap-0.5">
-                       <button onClick={() => handlePin(file)} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
-                           {file.is_pinned ? <PinOff size={14} className="text-amber-500" /> : <Pin size={14} className="text-slate-400" />} {file.is_pinned ? (t('unpin') || 'Unpin') : (t('pin') || 'Pin')}
-                       </button>
-                       <button onClick={() => handleEditMeta(file)} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
-                           <Database size={14} className="text-pink-400" /> {t('editInfo') || 'Edit Info'}
-                       </button>
-                       <button onClick={() => handleRename(file)} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
-                           <Edit2 size={14} className="text-orange-400" /> {t('rename')}
-                       </button>
-                       <button onClick={() => handleCopy(file)} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
-                           {copiedId === file.id ? <Check size={14} className="text-green-400" /> : <Copy size={14} className="text-blue-400" />} {copiedId === file.id ? 'Copied' : t('copyLink')}
-                       </button>
-                       <a href={getPreviewUrl(file.id, token)} target="_blank" rel="noopener noreferrer" className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
-                           <Eye size={14} className="text-indigo-400" /> {t('preview')}
-                       </a>
-                       <a href={getDownloadUrl(file.id, token)} target="_blank" rel="noopener noreferrer" className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
-                           <Download size={14} className="text-emerald-400" /> {t('download')}
-                       </a>
-                       <div className="h-px bg-white/10 my-1 mx-2"></div>
-                       <button onClick={() => handleDelete(file)} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-red-400 hover:text-white hover:bg-red-500/20 rounded-lg transition-colors">
-                           <Trash2 size={14} /> {t('delete')}
-                       </button>
-                   </div>
-              </div>
+           {/* Portal Menu */}
+           {isActive && createPortal(
+              <div 
+                  className={`fixed inset-0 z-[9998] cursor-default`} 
+                  onClick={(e) => { e.stopPropagation(); setActiveMenuId(null); }}
+              >
+                  <div 
+                    style={menuStyle}
+                    onClick={(e) => e.stopPropagation()}
+                    className={`w-48 glass-heavy border border-white/10 rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col p-1.5 ring-1 ring-black/5 ${menuOrigin}`}
+                  >
+                       <div className="flex flex-col gap-0.5">
+                           <button onClick={() => handlePin(file)} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+                               {file.is_pinned ? <PinOff size={14} className="text-amber-500" /> : <Pin size={14} className="text-slate-400" />} {file.is_pinned ? (t('unpin') || 'Unpin') : (t('pin') || 'Pin')}
+                           </button>
+                           <button onClick={() => handleEditMeta(file)} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+                               <Database size={14} className="text-pink-400" /> {t('editInfo') || 'Edit Info'}
+                           </button>
+                           <button onClick={() => handleRename(file)} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+                               <Edit2 size={14} className="text-orange-400" /> {t('rename')}
+                           </button>
+                           <button onClick={() => handleCopy(file)} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+                               {copiedId === file.id ? <Check size={14} className="text-green-400" /> : <Copy size={14} className="text-blue-400" />} {copiedId === file.id ? 'Copied' : t('copyLink')}
+                           </button>
+                           <a href={getPreviewUrl(file.id, token)} target="_blank" rel="noopener noreferrer" className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+                               <Eye size={14} className="text-indigo-400" /> {t('preview')}
+                           </a>
+                           <a href={getDownloadUrl(file.id, token)} target="_blank" rel="noopener noreferrer" className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+                               <Download size={14} className="text-emerald-400" /> {t('download')}
+                           </a>
+                           <div className="h-px bg-white/10 my-1 mx-2"></div>
+                           <button onClick={() => handleDelete(file)} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-red-400 hover:text-white hover:bg-red-500/20 rounded-lg transition-colors">
+                               <Trash2 size={14} /> {t('delete')}
+                           </button>
+                       </div>
+                  </div>
+              </div>,
+              document.body
            )}
        </div>
     </div>
