@@ -404,62 +404,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
   /* Removed local constants and helpers */
 
   const handleCopy = async (file: FileRecord) => {
-    const ext = getFileExtension(file.filename);
-    
-    if (isImageFile(file.filename)) {
-      // Copy image to clipboard
-      try {
-        const url = getDownloadUrl(file.id, token);
-        const response = await fetch(url);
-        const blob = await response.blob();
-        
-        // Convert to PNG for clipboard compatibility (most browsers support PNG)
-        let clipboardBlob = blob;
-        if (blob.type !== 'image/png') {
-          // Create canvas to convert image to PNG
-          const img = new Image();
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          
-          await new Promise<void>((resolve, reject) => {
-            img.onload = () => {
-              canvas.width = img.width;
-              canvas.height = img.height;
-              ctx?.drawImage(img, 0, 0);
-              resolve();
-            };
-            img.onerror = reject;
-            img.src = URL.createObjectURL(blob);
-          });
-          
-          clipboardBlob = await new Promise<Blob>((resolve) => {
-            canvas.toBlob((b) => resolve(b!), 'image/png');
-          });
-        }
-        
-        await navigator.clipboard.write([
-          new ClipboardItem({ 'image/png': clipboardBlob })
-        ]);
-        setCopiedId(file.id);
-        setTimeout(() => setCopiedId(null), 2000);
-      } catch (err) {
-        console.error('Failed to copy image:', err);
-        // Fallback to copying link
-        const url = window.location.origin + getDownloadUrl(file.id, token);
-        await navigator.clipboard.writeText(url);
-        setCopiedId(file.id);
-        setTimeout(() => setCopiedId(null), 2000);
-      }
-    } else {
-      // Copy link for non-image files
-      const url = window.location.origin + getDownloadUrl(file.id, token);
-      try {
-        await navigator.clipboard.writeText(url);
-        setCopiedId(file.id);
-        setTimeout(() => setCopiedId(null), 2000);
-      } catch (err) {
-        console.error('Failed to copy:', err);
-      }
+    const url = window.location.origin + getDownloadUrl(file.id, token);
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedId(file.id);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
     }
     setActiveMenuId(null);
   };

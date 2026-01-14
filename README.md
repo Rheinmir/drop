@@ -22,6 +22,13 @@ Drop is a modern file sharing and management application built with performance 
 *   **Functionality**: Core features work reliably. The addition of analytics provides value for administrators or power users to monitor usage.
 *   **Code Structure**: The codebase is modular, with clear separation between frontend components and backend services. The use of TypeScript adds type safety and maintainability.
 
+## Changelog
+
+### v1.1.0 (2026-01-14)
+- **Fix**: Pin toggle now works correctly in file context menu (#5)
+- **Fix**: Copy link option simplified - now copies download URL for all file types (#8)
+- **Improvement**: Context menu uses React Portal to prevent overflow clipping
+
 ## Recommendations
 *   **Scalability**: For larger deployments, migrating the SQLite database to PostgreSQL would offer better concurrency and performance.
 *   **Background Jobs**: Heavy tasks like thumbnail generation or file processing could be moved to background workers (e.g., Celery/Redis) to keep the API responsive.
