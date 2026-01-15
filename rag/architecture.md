@@ -48,6 +48,8 @@ graph TD
     - `metadata.db`: SQLite database file.
     - `uploads/`: Actual file storage.
 - `/static`: output directory of frontend build, served by FastAPI at root `/`.
+- `/rag`: Documentation and Knowledge Base.
+    - `templates/`: Reusable UI and Code patterns.
 - `main.py`: Entry point for the backend application.
 
 ## Key Architectural Decisions

@@ -1,9 +1,13 @@
 # Project State
 
 ## Current Version
-**v1.1.1** (2026-01-16)
+**v1.2.0** (2026-01-16)
 
 ## Recent Changelog
+- **v1.2.0**:
+    - Implemented "Auto-Fit" Grid System: Dynamic columns and vertical row stretching for perfect screen fit.
+    - Removed internal scrollbars in favor of strict pagination.
+    - Added UI Template: `rag/templates/responsive_auto_fit_grid.md`.
 - **v1.1.1**:
     - Fixed landscape scrolling issue by locking viewport height on large screens.
     - Added internal scrolling to Dashboard content area.
