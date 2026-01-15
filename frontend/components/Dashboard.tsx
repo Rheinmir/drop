@@ -64,6 +64,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
   const [utcMode, setUtcMode] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [itemsPerPage, setItemsPerPage] = useState(viewMode === 'grid' ? 60 : 20);
+  const [currentCols, setCurrentCols] = useState(5);
   const gridContainerRef = useRef<HTMLDivElement>(null);
   
   // Edit Meta State
@@ -93,37 +94,71 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
           const windowWidth = window.innerWidth;
           
           if (viewMode === 'grid') {
-              // Match Tailwind breakpoints exactly (based on VIEWPORT width)
-              let cols = 2; // Default (base)
-              if (windowWidth >= 1536) cols = 6; // 2xl
-              else if (windowWidth >= 1024) cols = 5; // lg
-              else if (windowWidth >= 768) cols = 4; // md
-              else if (windowWidth >= 640) cols = 3; // sm
-              
-              const gap = 16; // gap-4
-              // Total vertical padding: p-1 (wrapper) + p-4 (grid) top/bottom
-              // p-1 = 4px, p-4 = 16px. Total one side = 20px. Total both = 40px.
+              // 1. Determine Standard Columns based on Width
+              let standardCols = 2;
+              if (windowWidth >= 1536) standardCols = 6;
+              else if (windowWidth >= 1024) standardCols = 5;
+              else if (windowWidth >= 768) standardCols = 4;
+              else if (windowWidth >= 640) standardCols = 3;
+
+              const gap = 16;
               const verticalPadding = 40; 
-              
-              // Total horizontal padding: p-1 (wrapper) + p-4 (grid).
               const horizontalPadding = 40;
-              
-              const availableWidth = clientWidth - horizontalPadding - (gap * (cols - 1));
-              const itemSize = availableWidth / cols; // aspect-square so width = height
-              const rowHeight = itemSize + gap;
-              
-              // Available height for items
               const availableHeight = clientHeight - verticalPadding;
+              const availableWidthInContainer = clientWidth - horizontalPadding;
+
+              // 2. Find Optimal Columns (Best Fit for Height)
+              // We try standard, standard - 1, standard + 1 (if space allows?)
+              // Actually reducing cols -> bigger items -> fills height better?
+              // Or increasing cols -> smaller items -> finer granular rows?
               
-              // Calculate max rows that fit completely
-              // Formula: rows * itemSize + (rows - 1) * gap <= availableHeight
-              // rows * (itemSize + gap) - gap <= availableHeight
-              // rows <= (availableHeight + gap) / (itemSize + gap)
-              const rows = Math.floor((availableHeight + gap) / rowHeight);
+              let bestCols = standardCols;
+              let minWaste = Infinity;
+              let bestTotalItems = 0;
+
+              // Helper to calc waste
+              const calcFit = (c: number) => {
+                  if (c < 2) return { waste: Infinity, total: 0 };
+                  const w = (availableWidthInContainer - (gap * (c - 1))) / c;
+                  const h = w; // Square
+                  const rowH = h + gap;
+                  
+                  // How many rows fit fully?
+                  // (rows * rowH) - gap <= availableHeight
+                  const r = Math.floor((availableHeight + gap) / rowH);
+                  if (r < 1) return { waste: availableHeight, total: c }; // At least 1 row
+                  
+                  const usedH = (r * rowH) - gap;
+                  const waste = availableHeight - usedH;
+                  return { waste, total: c * r };
+              };
+
+              // Try range: standard, standard-1, standard+1 (if reasonable)
+              const candidates = [standardCols, standardCols - 1, standardCols + 1].filter(c => c >= 2 && c <= 8);
               
-              const totalItems = Math.max(cols, cols * rows); 
-              
-              setItemsPerPage(totalItems);
+              candidates.forEach(c => {
+                   const { waste, total } = calcFit(c);
+                   // Prefer standard if waste is similar?
+                   // Or purely minimize waste.
+                   // Weighted: Penalize deviating from standard?
+                   // If waste < 60px (approx 1/3 item), it's good.
+                   // Let's just minimize waste.
+                   if (waste < minWaste) {
+                       minWaste = waste;
+                       bestCols = c;
+                       bestTotalItems = total;
+                   }
+              });
+
+              // Fallback if something fails
+              if (bestTotalItems === 0) {
+                  bestCols = standardCols;
+                  const { total } = calcFit(standardCols);
+                  bestTotalItems = total || standardCols;
+              }
+
+              setCurrentCols(bestCols);
+              setItemsPerPage(bestTotalItems);
           } else {
               // List View
               const rowHeight = 65; // Approx height of list item
@@ -1348,7 +1383,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
                       })
                   ) : (
                       /* GRID VIEW */
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6 gap-4 p-4">
+                      <div 
+                        className="grid gap-4 p-4 content-center h-full"
+                        style={{ gridTemplateColumns: `repeat(${currentCols}, minmax(0, 1fr))` }}
+                      >
                           {currentFiles.map((file) => (
                              <FileGridItem 
                                key={file.id}
