@@ -1178,7 +1178,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
 
           <div className="glass rounded-3xl border border-white/10 shadow-xl flex flex-col min-h-[400px] lg:flex-1 lg:h-auto transition-all duration-300 overflow-hidden">
             <div 
-                className="flex flex-col flex-1 overflow-y-auto custom-scrollbar p-1"
+                className="flex flex-col flex-1 overflow-y-auto no-scrollbar p-1"
                 onWheel={handleContainerWheel}
             >
               {currentFiles.length === 0 ? (
