@@ -90,23 +90,38 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
       const calculateItems = () => {
           if (!gridContainerRef.current) return;
           const { clientWidth, clientHeight } = gridContainerRef.current;
+          const windowWidth = window.innerWidth;
           
           if (viewMode === 'grid') {
-              // Get current column count based on width breakpoints (matching Tailwind classes)
-              let cols = 2;
-              if (clientWidth >= 1536) cols = 6; // 2xl
-              else if (clientWidth >= 1024) cols = 5; // lg
-              else if (clientWidth >= 768) cols = 4; // md
-              else if (clientWidth >= 640) cols = 3; // sm
+              // Match Tailwind breakpoints exactly (based on VIEWPORT width)
+              let cols = 2; // Default (base)
+              if (windowWidth >= 1536) cols = 6; // 2xl
+              else if (windowWidth >= 1024) cols = 5; // lg
+              else if (windowWidth >= 768) cols = 4; // md
+              else if (windowWidth >= 640) cols = 3; // sm
               
               const gap = 16; // gap-4
-              const padding = 32; // p-4 (16px * 2)
-              const availableWidth = clientWidth - padding - (gap * (cols - 1));
-              const itemSize = availableWidth / cols; // aspect-square
+              // Total vertical padding: p-1 (wrapper) + p-4 (grid) top/bottom
+              // p-1 = 4px, p-4 = 16px. Total one side = 20px. Total both = 40px.
+              const verticalPadding = 40; 
+              
+              // Total horizontal padding: p-1 (wrapper) + p-4 (grid).
+              const horizontalPadding = 40;
+              
+              const availableWidth = clientWidth - horizontalPadding - (gap * (cols - 1));
+              const itemSize = availableWidth / cols; // aspect-square so width = height
               const rowHeight = itemSize + gap;
               
-              const rows = Math.floor((clientHeight - padding) / rowHeight);
-              const totalItems = Math.max(cols, cols * rows); // At least 1 row
+              // Available height for items
+              const availableHeight = clientHeight - verticalPadding;
+              
+              // Calculate max rows that fit completely
+              // Formula: rows * itemSize + (rows - 1) * gap <= availableHeight
+              // rows * (itemSize + gap) - gap <= availableHeight
+              // rows <= (availableHeight + gap) / (itemSize + gap)
+              const rows = Math.floor((availableHeight + gap) / rowHeight);
+              
+              const totalItems = Math.max(cols, cols * rows); 
               
               setItemsPerPage(totalItems);
           } else {
