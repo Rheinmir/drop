@@ -80,6 +80,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
 
   const faviconRef = useRef<any>(null);
   const notificationCountRef = useRef(0);
+  const wheelTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   // Backup & Restore
   const [isRestoring, setIsRestoring] = useState(false);
@@ -169,22 +170,22 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
   };
 
   const handleContainerWheel = (e: React.WheelEvent) => {
-    // Prevent default scroll if we are handling page change
-    // But since the container is fixed height without overflow, standard scroll isn't an issue unless overflow happens
-    // We only want to trigger page change.
+    // Prevent default scroll if needed, but usually we just want to intercept logical paging
     
-    // Add a small threshold to avoid sensitivity
+    // Simple Throttle/Debounce
+    if (wheelTimeoutRef.current) return;
+
     if (Math.abs(e.deltaY) > 30) {
+        wheelTimeoutRef.current = setTimeout(() => {
+            wheelTimeoutRef.current = null;
+        }, 500); // 500ms delay between page switches
+
         if (e.deltaY > 0) {
             // Scroll Down -> Next Page
-            if (currentPage < totalPages) {
-                setCurrentPage(p => p + 1);
-            }
+            setCurrentPage(prev => (prev < totalPages ? prev + 1 : prev));
         } else {
             // Scroll Up -> Prev Page
-            if (currentPage > 1) {
-                setCurrentPage(p => p - 1);
-            }
+            setCurrentPage(prev => (prev > 1 ? prev - 1 : prev));
         }
     }
   };
@@ -600,7 +601,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentFiles = processedFiles.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(processedFiles.length / itemsPerPage);
+  const totalPages = Math.ceil(processedFiles.length / itemsPerPage) || 1; // Ensure at least 1 page
+
+  // Clamp pagination if totalPages changes (e.g. view mode change)
+  useEffect(() => {
+    if (currentPage > totalPages) {
+        setCurrentPage(totalPages);
+    }
+  }, [totalPages, currentPage]);
 
     return (
     <div className="min-h-screen lg:h-full lg:min-h-0 bg-transparent text-slate-200 font-sans transition-colors duration-500 selection:bg-ocean-500/30 overflow-x-hidden relative">
