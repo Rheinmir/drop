@@ -63,7 +63,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
   const [time, setTime] = useState(new Date());
   const [utcMode, setUtcMode] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const itemsPerPage = viewMode === 'grid' ? 60 : 20;
+  const [itemsPerPage, setItemsPerPage] = useState(viewMode === 'grid' ? 60 : 20);
+  const gridContainerRef = useRef<HTMLDivElement>(null);
   
   // Edit Meta State
   const [editGroup, setEditGroup] = useState('');
@@ -81,6 +82,53 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
   const faviconRef = useRef<any>(null);
   const notificationCountRef = useRef(0);
   const wheelTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Dynamic Pagination Calculation
+  useEffect(() => {
+      if (!gridContainerRef.current) return;
+
+      const calculateItems = () => {
+          if (!gridContainerRef.current) return;
+          const { clientWidth, clientHeight } = gridContainerRef.current;
+          
+          if (viewMode === 'grid') {
+              // Get current column count based on width breakpoints (matching Tailwind classes)
+              let cols = 2;
+              if (clientWidth >= 1536) cols = 6; // 2xl
+              else if (clientWidth >= 1024) cols = 5; // lg
+              else if (clientWidth >= 768) cols = 4; // md
+              else if (clientWidth >= 640) cols = 3; // sm
+              
+              const gap = 16; // gap-4
+              const padding = 32; // p-4 (16px * 2)
+              const availableWidth = clientWidth - padding - (gap * (cols - 1));
+              const itemSize = availableWidth / cols; // aspect-square
+              const rowHeight = itemSize + gap;
+              
+              const rows = Math.floor((clientHeight - padding) / rowHeight);
+              const totalItems = Math.max(cols, cols * rows); // At least 1 row
+              
+              setItemsPerPage(totalItems);
+          } else {
+              // List View
+              const rowHeight = 65; // Approx height of list item
+              const padding = 8; // p-1 vertical
+              const rows = Math.floor((clientHeight - padding) / rowHeight);
+              setItemsPerPage(Math.max(5, rows));
+          }
+      };
+
+      // Initial calc
+      calculateItems();
+
+      const observer = new ResizeObserver(() => {
+          // Debounce slightly or just run
+           window.requestAnimationFrame(calculateItems);
+      });
+      observer.observe(gridContainerRef.current);
+
+      return () => observer.disconnect();
+  }, [viewMode]);
   
   // Backup & Restore
   const [isRestoring, setIsRestoring] = useState(false);
@@ -1185,10 +1233,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
           </div>
 
           <div className="glass rounded-3xl border border-white/10 shadow-xl flex flex-col min-h-[400px] lg:flex-1 lg:h-auto transition-all duration-300 overflow-hidden">
-            <div 
-                className="flex flex-col flex-1 overflow-y-auto no-scrollbar p-1"
-                onWheel={handleContainerWheel}
-            >
+             <div 
+                 ref={gridContainerRef}
+                 className="flex flex-col flex-1 overflow-hidden no-scrollbar p-1"
+                 onWheel={handleContainerWheel}
+             >
               {currentFiles.length === 0 ? (
                 <div className="flex-1 flex flex-col items-center justify-center text-slate-500 opacity-60">
                   <FileText size={48} className="mb-4 text-slate-700" />
