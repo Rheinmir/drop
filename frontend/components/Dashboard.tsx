@@ -63,7 +63,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
   const [time, setTime] = useState(new Date());
   const [utcMode, setUtcMode] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const itemsPerPage = viewMode === 'grid' ? 15 : 10;
+  const itemsPerPage = viewMode === 'grid' ? 60 : 20;
   
   // Edit Meta State
   const [editGroup, setEditGroup] = useState('');
