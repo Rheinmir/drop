@@ -1098,7 +1098,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
         <section className="lg:col-span-8 flex flex-col gap-6 lg:h-full lg:min-h-0">
           
           {/* Controls Bar (Glass) */}
-          <div className="glass rounded-2xl p-2 flex flex-col sm:flex-row gap-3 items-center justify-between sticky top-24 z-30 transition-all duration-300">
+          <div className="glass rounded-2xl p-2 flex flex-col sm:flex-row gap-3 items-center justify-between relative z-30 transition-all duration-300">
              
              <div className="flex items-center gap-2 w-full sm:w-auto">
                 {/* Filters */}
