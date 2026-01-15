@@ -37,20 +37,16 @@ pipeline {
                     
                     echo "Checking remote image: ${fullImageName}"
                     
-                    // Try to pull the image first to see if it exists remotely
-                    def pullStatus = sh(script: "docker pull ${fullImageName} || true", returnStdout: true).trim()
+                    // Force build every time to ensure code changes are picked up
+                    // logic removed: skipping build if image exists
                     
-                    if (pullStatus.contains("Image is up to date") || pullStatus.contains("Downloaded newer image")) {
-                         echo "Image ${fullImageName} exists remotely. Skipping build."
-                    } else {
-                        echo "Image not found remotely. Building..."
-                        sh "docker build -t ${fullImageName} ."
-                        sh "docker tag ${fullImageName} ${latestImageName}"
-                        
-                        echo "Pushing images..."
-                        sh "docker push ${fullImageName}"
-                        sh "docker push ${latestImageName}"
-                    }
+                    echo "Building image..."
+                    sh "docker build -t ${fullImageName} ."
+                    sh "docker tag ${fullImageName} ${latestImageName}"
+                    
+                    echo "Pushing images..."
+                    sh "docker push ${fullImageName}"
+                    sh "docker push ${latestImageName}"
                 }
             }
         }
