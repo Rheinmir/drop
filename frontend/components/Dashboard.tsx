@@ -65,6 +65,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [itemsPerPage, setItemsPerPage] = useState(viewMode === 'grid' ? 60 : 20);
   const [currentCols, setCurrentCols] = useState(5);
+  const [gridRowHeight, setGridRowHeight] = useState(200);
   const gridContainerRef = useRef<HTMLDivElement>(null);
   
   // Edit Meta State
@@ -107,58 +108,73 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
               const availableHeight = clientHeight - verticalPadding;
               const availableWidthInContainer = clientWidth - horizontalPadding;
 
-              // 2. Find Optimal Columns (Best Fit for Height)
-              // We try standard, standard - 1, standard + 1 (if space allows?)
-              // Actually reducing cols -> bigger items -> fills height better?
-              // Or increasing cols -> smaller items -> finer granular rows?
+              // 2. Find Optimal Configuration
+              // We want to maximize rows (at least 3 if possible) AND fill the height perfectly.
+              // To fill height, we will allow items to stretch vertically (rectangular).
               
-              let bestCols = standardCols;
-              let minWaste = Infinity;
-              let bestTotalItems = 0;
-
-              // Helper to calc waste
-              const calcFit = (c: number) => {
-                  if (c < 2) return { waste: Infinity, total: 0 };
-                  const w = (availableWidthInContainer - (gap * (c - 1))) / c;
-                  const h = w; // Square
-                  const rowH = h + gap;
-                  
-                  // How many rows fit fully?
-                  // (rows * rowH) - gap <= availableHeight
-                  const r = Math.floor((availableHeight + gap) / rowH);
-                  if (r < 1) return { waste: availableHeight, total: c }; // At least 1 row
-                  
-                  const usedH = (r * rowH) - gap;
-                  const waste = availableHeight - usedH;
-                  return { waste, total: c * r };
+              let bestConfig = {
+                  cols: standardCols,
+                  rows: 3,
+                  total: standardCols * 3,
+                  rowHeight: 200,
+                  aspectRatioDiff: 0 // Preference for squareness
               };
+              let foundBetter = false;
 
-              // Try range: standard, standard-1, standard+1 (if reasonable)
-              const candidates = [standardCols, standardCols - 1, standardCols + 1].filter(c => c >= 2 && c <= 8);
+              // Candidates: widened range to find >= 3 rows fit
+              const candidates = [standardCols, standardCols - 1, standardCols + 1, standardCols + 2].filter(c => c >= 2 && c <= 10);
               
               candidates.forEach(c => {
-                   const { waste, total } = calcFit(c);
-                   // Prefer standard if waste is similar?
-                   // Or purely minimize waste.
-                   // Weighted: Penalize deviating from standard?
-                   // If waste < 60px (approx 1/3 item), it's good.
-                   // Let's just minimize waste.
-                   if (waste < minWaste) {
-                       minWaste = waste;
-                       bestCols = c;
-                       bestTotalItems = total;
+                   const w = (availableWidthInContainer - (gap * (c - 1))) / c;
+                   // Base square height
+                   const h = w; 
+                   
+                   // Approx rows that fit naturally
+                   let r = Math.floor((availableHeight + gap) / (h + gap));
+                   
+                   // User prefers at least 3 rows on large screens
+                   if (r < 3 && availableHeight > 500) {
+                       // Try to force 3 rows? Items will be short (wide rectangles)
+                       // Only if it doesn't distort too much
+                       const forcedH = (availableHeight - (gap * 2)) / 3;
+                       if (forcedH / w > 0.6) r = 3; // Acceptable ratio
+                   }
+                   if (r < 1) r = 1;
+
+                   // Now Calculate Exact Row Height to FILL the space
+                   // availableHeight = (r * finalH) + ((r-1) * gap)
+                   // availableHeight = r*finalH + r*gap - gap
+                   // availableHeight + gap = r * (finalH + gap)
+                   // finalH + gap = (availableHeight + gap) / r
+                   // finalH = ((availableHeight + gap) / r) - gap
+                   
+                   const finalH = ((availableHeight + gap) / r) - gap;
+                   
+                   const ar = w / finalH; // 1 = square, >1 wide, <1 tall
+                   const diff = Math.abs(1 - ar);
+                   
+                   // Scoring: 
+                   // 1. Must have rows >= 3 (high priority)
+                   // 2. Aspect ratio close to 1 (secondary)
+                   const score = (r >= 3 ? 1000 : 0) - (diff * 100);
+                   
+                   const currentBestScore = (bestConfig.rows >= 3 ? 1000 : 0) - (bestConfig.aspectRatioDiff * 100);
+
+                   if (!foundBetter || score > currentBestScore) {
+                       bestConfig = {
+                           cols: c,
+                           rows: r,
+                           total: c * r,
+                           rowHeight: finalH,
+                           aspectRatioDiff: diff
+                       };
+                       foundBetter = true;
                    }
               });
 
-              // Fallback if something fails
-              if (bestTotalItems === 0) {
-                  bestCols = standardCols;
-                  const { total } = calcFit(standardCols);
-                  bestTotalItems = total || standardCols;
-              }
-
-              setCurrentCols(bestCols);
-              setItemsPerPage(bestTotalItems);
+              setCurrentCols(bestConfig.cols);
+              setGridRowHeight(bestConfig.rowHeight);
+              setItemsPerPage(bestConfig.total);
           } else {
               // List View
               const rowHeight = 65; // Approx height of list item
@@ -1385,7 +1401,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
                       /* GRID VIEW */
                       <div 
                         className="grid gap-4 p-4 content-start h-full"
-                        style={{ gridTemplateColumns: `repeat(${currentCols}, minmax(0, 1fr))` }}
+                        style={{ 
+                            gridTemplateColumns: `repeat(${currentCols}, minmax(0, 1fr))`,
+                            gridAutoRows: `${gridRowHeight}px`
+                        }}
                       >
                           {currentFiles.map((file) => (
                              <FileGridItem 

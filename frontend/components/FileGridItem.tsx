@@ -99,7 +99,7 @@ export const FileGridItem: React.FC<FileGridItemProps> = ({
     <div 
       onClick={() => setSelectedFile(file)}
       style={{ zIndex: isActive ? 50 : 0 }}
-      className={`group relative aspect-square rounded-2xl border cursor-pointer flex flex-col items-center justify-center p-3 gap-2
+      className={`group relative h-full w-full rounded-2xl border cursor-pointer flex flex-col items-center justify-center p-3 gap-2
           ${selectedFile?.id === file.id ? 'bg-ocean-500/10 border-ocean-500/50 shadow-[0_0_15px_rgba(14,165,233,0.15)]' : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10'}
           transition-all duration-200
       `}
