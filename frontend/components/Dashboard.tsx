@@ -750,7 +750,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
       </header>
 
       {/* Main Content Area */}
-      <div className="max-w-[1600px] mx-auto pt-24 pb-8 px-4 relative z-10 lg:h-full lg:overflow-y-auto custom-scrollbar">
+      <div className="max-w-[1600px] mx-auto pt-24 pb-8 px-4 relative z-10 lg:h-full lg:overflow-hidden flex flex-col">
         
         {/* Insight Modal Overlay */}
         {showInsight && (
@@ -940,7 +940,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
           </div>
         )}
 
-        <main className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <main className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:h-full lg:min-h-0">
         
         {/* Left Panel: Upload & Preview - Col Span 4 */}
         <section className="lg:col-span-4 h-full flex flex-col gap-6">
@@ -1095,7 +1095,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
         </section>
 
         {/* Right Panel: File List - Col Span 8 */}
-        <section className="lg:col-span-8 flex flex-col gap-6">
+        <section className="lg:col-span-8 flex flex-col gap-6 lg:h-full lg:min-h-0">
           
           {/* Controls Bar (Glass) */}
           <div className="glass rounded-2xl p-2 flex flex-col sm:flex-row gap-3 items-center justify-between sticky top-24 z-30 transition-all duration-300">
@@ -1176,7 +1176,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
              </div>
           </div>
 
-          <div className="glass rounded-3xl border border-white/10 shadow-xl flex flex-col min-h-[600px] h-[calc(100vh-16rem)] transition-all duration-300">
+          <div className="glass rounded-3xl border border-white/10 shadow-xl flex flex-col min-h-[400px] lg:flex-1 lg:h-auto transition-all duration-300 overflow-hidden">
             <div 
                 className="flex flex-col flex-1 overflow-y-auto custom-scrollbar p-1"
                 onWheel={handleContainerWheel}
