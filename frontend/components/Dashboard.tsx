@@ -1384,7 +1384,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
                   ) : (
                       /* GRID VIEW */
                       <div 
-                        className="grid gap-4 p-4 content-center h-full"
+                        className="grid gap-4 p-4 content-start h-full"
                         style={{ gridTemplateColumns: `repeat(${currentCols}, minmax(0, 1fr))` }}
                       >
                           {currentFiles.map((file) => (
