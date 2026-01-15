@@ -31,7 +31,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen relative font-sans text-slate-100 selection:bg-ocean-500/30">
+    <div className="min-h-screen lg:h-screen lg:overflow-hidden relative font-sans text-slate-100 selection:bg-ocean-500/30">
       <BubbleBackground />
       
       {token ? (

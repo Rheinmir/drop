@@ -603,7 +603,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
   const totalPages = Math.ceil(processedFiles.length / itemsPerPage);
 
     return (
-    <div className="min-h-screen bg-transparent text-slate-200 font-sans transition-colors duration-500 selection:bg-ocean-500/30 overflow-x-hidden relative">
+    <div className="min-h-screen lg:h-full lg:min-h-0 bg-transparent text-slate-200 font-sans transition-colors duration-500 selection:bg-ocean-500/30 overflow-x-hidden relative">
       
       {/* Background Layer */}
       {bgImage && (
@@ -750,7 +750,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
       </header>
 
       {/* Main Content Area */}
-      <div className="max-w-[1600px] mx-auto pt-24 pb-8 px-4 relative z-10">
+      <div className="max-w-[1600px] mx-auto pt-24 pb-8 px-4 relative z-10 lg:h-full lg:overflow-y-auto custom-scrollbar">
         
         {/* Insight Modal Overlay */}
         {showInsight && (
