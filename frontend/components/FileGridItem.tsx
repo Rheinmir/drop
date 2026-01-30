@@ -11,6 +11,8 @@ interface FileGridItemProps {
   activeMenuId: number | null;
   selectedFile: FileRecord | null;
   copiedId: number | null;
+  isSelected: boolean;
+  selectionMode: boolean;
   t: (key: string) => string;
   setActiveMenuId: (id: number | null) => void;
   setSelectedFile: (file: FileRecord) => void;
@@ -19,6 +21,7 @@ interface FileGridItemProps {
   handleRename: (file: FileRecord) => void;
   handleCopy: (file: FileRecord) => void;
   handleDelete: (file: FileRecord) => void;
+  toggleSelection: (id: number) => void;
 }
 
 export const FileGridItem: React.FC<FileGridItemProps> = ({
@@ -27,6 +30,8 @@ export const FileGridItem: React.FC<FileGridItemProps> = ({
   activeMenuId,
   selectedFile,
   copiedId,
+  isSelected,
+  selectionMode,
   t,
   setActiveMenuId,
   setSelectedFile,
@@ -34,7 +39,8 @@ export const FileGridItem: React.FC<FileGridItemProps> = ({
   handleEditMeta,
   handleRename,
   handleCopy,
-  handleDelete
+  handleDelete,
+  toggleSelection
 }) => {
   const ext = getFileExtension(file.filename);
   const colorClasses = getFileTypeColor(file.filename);
@@ -62,13 +68,6 @@ export const FileGridItem: React.FC<FileGridItemProps> = ({
                 // Not enough space below, open upwards
                 top = rect.top + scrollY - 8; // 8px spacing
                 originClass = 'origin-bottom-right';
-                // We will use 'bottom' css property if we could, but calculating absolute top is safer for portal
-                // Actually, to make it expand upwards from the button, we need it to end at rect.top
-                // But since we render a div with relative flow inside portal, we usually position top-left.
-                // To anchor bottom-right of menu to button:
-                // We'll set top to (rect.top + scrollY) and use translateY(-100%) or just calculate top = rect.top + scrollY - height?
-                // Auto height is tricky. Better to let it flow naturally?
-                // Let's stick to dynamic top/bottom placement.
             } else {
                 top = rect.bottom + scrollY + 8;
                 originClass = 'origin-top-right';
@@ -97,15 +96,34 @@ export const FileGridItem: React.FC<FileGridItemProps> = ({
 
   return (
     <div 
-      onClick={() => setSelectedFile(file)}
+      onClick={() => {
+        if (selectionMode) {
+           toggleSelection(file.id);
+        } else {
+           setSelectedFile(file);
+        }
+      }}
       style={{ zIndex: isActive ? 50 : 0 }}
       className={`group relative h-full w-full rounded-2xl border cursor-pointer flex flex-col items-center justify-center p-3 gap-2
-          ${selectedFile?.id === file.id ? 'bg-ocean-500/10 border-ocean-500/50 shadow-[0_0_15px_rgba(14,165,233,0.15)]' : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10'}
+          ${isSelected ? 'bg-ocean-500/20 border-ocean-500/50 shadow-[0_0_15px_rgba(14,165,233,0.2)]' : (selectedFile?.id === file.id ? 'bg-ocean-500/10 border-ocean-500/50 shadow-[0_0_15px_rgba(14,165,233,0.15)]' : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10')}
           transition-all duration-200
       `}
     > 
-       {/* Pin Indicator */}
-       {!!file.is_pinned && <Pin size={12} className="absolute top-2 left-2 text-amber-400 rotate-45 z-10 drop-shadow-md" />}
+       {/* Selection Checkbox */}
+       <div 
+         onClick={(e) => { e.stopPropagation(); toggleSelection(file.id); }}
+         className={`absolute top-2 left-2 z-20 p-1 rounded-full transition-all duration-200 
+            ${isSelected ? 'opacity-100 scale-100' : 'opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100'}
+            ${selectionMode ? 'opacity-100 scale-100' : ''}
+         `}
+       >
+          <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${isSelected ? 'bg-ocean-500 border-ocean-500' : 'bg-black/40 border-white/30 hover:border-white'}`}>
+              {isSelected && <Check size={12} className="text-white" strokeWidth={3} />}
+          </div>
+       </div>
+
+       {/* Pin Indicator - Shifted if selection mode or pinned, but let's just shift it right */}
+       {!!file.is_pinned && <Pin size={12} className="absolute top-2.5 left-9 text-amber-400 rotate-45 z-10 drop-shadow-md transition-all" />}
 
        {/* Content: Image Preview or Icon */}
        {isImg ? (

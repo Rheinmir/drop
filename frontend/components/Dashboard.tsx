@@ -5,6 +5,8 @@ import { BarChart as BarGraph, LineChart, Line, Bar, XAxis, YAxis, Tooltip, Resp
 import { Upload, FileText, Download, RefreshCw, LogOut, HardDrive, Clock, CheckCircle, Eye, Copy, Check, Edit2, Palette, Sun, Moon, Book, CloudRain, Mountain, Droplets, MoreVertical, Globe, Languages, Trash2, FolderOpen, ChevronLeft, ChevronRight, Pin, PinOff, Search, ArrowUpDown, Filter, Tag, Layers, Database, PieChart, List, FileImage, FileVideo, FileAudio, FileCode, FileArchive, FileSpreadsheet, File as FileGeneric, X, ZoomIn, ZoomOut, RotateCcw, RotateCw, AlertCircle } from 'lucide-react';
 // @ts-ignore
 import Favico from 'favico.js';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 import { translations, Language } from '../translations';
 import { getFileExtension, getFileTypeColor, getFileIcon, isImageFile, formatSize } from '../utils/fileUtils';
 import { FileGridItem } from './FileGridItem';
@@ -23,6 +25,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [copiedId, setCopiedId] = useState<number | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [selectedFileIds, setSelectedFileIds] = useState<Set<number>>(new Set());
+  const [isZipping, setIsZipping] = useState(false);
   
   // Theme & Language
   const [theme, setTheme] = useState<string>(() => localStorage.getItem('app-theme') || 'ocean');
@@ -606,6 +610,57 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFileUpload(e.dataTransfer.files);
     }
+  };
+
+  // Batch Selection Logic
+  const toggleSelection = (id: number) => {
+      setSelectedFileIds(prev => {
+          const newSet = new Set(prev);
+          if (newSet.has(id)) newSet.delete(id);
+          else newSet.add(id);
+          return newSet;
+      });
+  };
+
+  const clearSelection = () => setSelectedFileIds(new Set());
+
+  const selectAll = () => {
+    const ids = new Set(processedFiles.map(f => f.id));
+    setSelectedFileIds(ids);
+  };
+
+  const handleDownloadZip = async () => {
+      if (selectedFileIds.size === 0) return;
+      setIsZipping(true);
+      const zip = new JSZip();
+      const filesToZip = files.filter(f => selectedFileIds.has(f.id));
+
+      try {
+          // Add files to zip
+          const promises = filesToZip.map(async (file) => {
+              try {
+                  const url = getDownloadUrl(file.id, token);
+                  const response = await fetch(url);
+                  if (!response.ok) throw new Error(`Failed to fetch ${file.filename}`);
+                  const blob = await response.blob();
+                  zip.file(file.filename, blob);
+              } catch (e) {
+                  console.error(`Error zipping ${file.filename}`, e);
+              }
+          });
+
+          await Promise.all(promises);
+          
+          const content = await zip.generateAsync({ type: "blob" });
+          saveAs(content, `drop_batch_${new Date().toISOString().split('T')[0]}.zip`);
+          
+          clearSelection();
+      } catch (err) {
+          alert(t('downloadFailed') || 'Download failed');
+          console.error(err);
+      } finally {
+          setIsZipping(false);
+      }
   };
 
   const formatSize = (bytes: number) => {
@@ -1414,6 +1469,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
                                activeMenuId={activeMenuId}
                                selectedFile={selectedFile}
                                copiedId={copiedId}
+                               isSelected={selectedFileIds.has(file.id)}
+                               selectionMode={selectedFileIds.size > 0}
                                t={t}
                                setActiveMenuId={setActiveMenuId}
                                setSelectedFile={setSelectedFile}
@@ -1422,6 +1479,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
                                handleRename={handleRename}
                                handleCopy={handleCopy}
                                handleDelete={handleDelete}
+                               toggleSelection={toggleSelection}
                              />
                           ))}
                       </div>
@@ -1466,6 +1524,45 @@ export const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
           </div>
         </section>
       </main>
+
+      {/* Bulk Action Bar */}
+      {selectedFileIds.size > 0 && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-4 animate-in slide-in-from-bottom-4 fade-in duration-300">
+           <div className="glass-heavy border border-white/10 rounded-2xl shadow-2xl p-2 flex items-center gap-2 pr-4">
+               <div className="flex items-center gap-2 pl-3 pr-4 border-r border-white/10">
+                   <span className="bg-ocean-500 text-white text-sm font-bold w-6 h-6 rounded-md flex items-center justify-center shadow-lg shadow-ocean-500/30">
+                       {selectedFileIds.size}
+                   </span>
+                   <span className="text-sm font-medium text-slate-300">{t('selected') || 'Selected'}</span>
+               </div>
+               
+               <button 
+                   onClick={selectAll}
+                   className="p-2 hover:bg-white/10 rounded-xl text-slate-400 hover:text-white transition-colors text-xs font-medium"
+               >
+                   Select All
+               </button>
+
+               <button 
+                   onClick={clearSelection}
+                   className="p-2 hover:bg-white/10 rounded-xl text-slate-400 hover:text-white transition-colors text-xs font-medium"
+               >
+                   Clear
+               </button>
+
+               <div className="h-6 w-px bg-white/10 mx-1"></div>
+
+               <button 
+                   onClick={handleDownloadZip}
+                   disabled={isZipping}
+                   className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white rounded-xl font-bold shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+               >
+                   {isZipping ? <RefreshCw className="animate-spin" size={16} /> : <Download size={16} strokeWidth={2.5} />}
+                   {isZipping ? 'Zipping...' : 'Download Zip'}
+               </button>
+           </div>
+        </div>
+      )}
       </div>
 
       {/* Edit Meta Modal */}
